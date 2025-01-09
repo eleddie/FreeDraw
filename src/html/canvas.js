@@ -27,7 +27,6 @@ context.fillStyle = backgroundColor;
 context.fillRect(0, 0, canvas.width, canvas.height);
 
 onDrawModeClick();
-dotGrid();
 
 function onStartDrawing(e) {
   drawing = true;
@@ -102,7 +101,6 @@ function onClearCanvasClick() {
   context.fillStyle = backgroundColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
   onDrawModeClick();
-  dotGrid();
 }
 
 function onDownloadCanvasClick() {
@@ -173,17 +171,3 @@ window.addEventListener("message", (event) => {
     img.src = message.data;
   }
 });
-
-function dotGrid() {
-  const dotSize = 2;
-  const dotSpacing = 25;
-  const dotColor = dotsColor;
-  for (let x = 0; x < canvas.width; x += dotSpacing) {
-    for (let y = 0; y < canvas.height; y += dotSpacing) {
-      context.beginPath();
-      context.arc(x, y, dotSize / 2, 0, Math.PI * 2, false);
-      context.fillStyle = dotColor;
-      context.fill();
-    }
-  }
-}
