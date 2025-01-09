@@ -1,410 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Free Draw</title>
-    <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      }
-      canvas {
-        display: block;
-        width: 100%;
-        height: 100%;
-        background-color: #000001;
-      }
-      .toolbar {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: #333333;
-        padding: 10px;
-        border-radius: 5px;
-        display: flex;
-        gap: 10px;
-        flex-direction: column;
-      }
-      .toolbar button {
-        color: #fffffe;
-        padding: 10px;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-        background: none;
-      }
-      .toolbar button img {
-        width: 24px;
-        height: 24px;
-      }
-      .toolbar button.active {
-        background-color: #444444;
-      }
-      .eraser-cursor {
-        cursor: none;
-      }
-      .draw-cursor {
-        cursor: none;
-      }
-      .circle-cursor {
-        cursor: none;
-      }
-      .toolbar input[type="range"] {
-        width: 100px;
-      }
-      .size-slider {
-        position: absolute;
-        display: none;
-        background: #333333;
-        padding: 10px;
-        border-radius: 5px;
-      }
-      .size-slider input {
-        outline: none;
-      }
-      .debug-container {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.7);
-        color: #fff;
-        padding: 10px;
-        border-radius: 5px;
-        font-family: Arial, sans-serif;
-        font-size: 12px;
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="drawCanvas"></canvas>
-    <div class="toolbar">
-      <button id="drawMode">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-          <path d="M13.5 6.5l4 4" />
-        </svg>
-      </button>
-      <button id="eraserMode">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="icon icon-tabler icons-tabler-outline icon-tabler-eraser"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path
-            d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3"
-          />
-          <path d="M18 13.3l-6.3 -6.3" />
-        </svg>
-      </button>
-      <button id="clearCanvas">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="icon icon-tabler icons-tabler-outline icon-tabler-trash-x"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M4 7h16" />
-          <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-          <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-          <path d="M10 12l4 4m0 -4l-4 4" />
-        </svg>
-      </button>
-      <button id="downloadCanvas">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="icon icon-tabler icons-tabler-outline icon-tabler-download"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-          <path d="M7 11l5 5l5 -5" />
-          <path d="M12 4l0 12" />
-        </svg>
-      </button>
-    </div>
-    <div class="size-slider" id="sizeSliderContainer">
-      <input type="range" id="sizeSlider" min="1" max="10" value="2" />
-    </div>
-    <div class="debug-container" id="debugContainer">
-      <div>Current Mode: <span id="currentMode">Pen</span></div>
-      <div>Stroke Color: <span id="strokeColor">#ffffff</span></div>
-      <div>Stroke Width: <span id="strokeWidth">2</span></div>
-    </div>
-    <script>
-      const canvas = document.getElementById("drawCanvas");
-      const context = canvas.getContext("2d");
-      const foregroundColor = "#fffffe";
-      const backgroundColor = "#000001";
 
-      const currentModeElement = document.getElementById("currentMode");
-      const strokeColorElement = document.getElementById("strokeColor");
-      const strokeWidthElement = document.getElementById("strokeWidth");
-      const sizeSliderContainer = document.getElementById(
-        "sizeSliderContainer"
-      );
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Free Draw</title>
+  <style>
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
 
-      let drawing = false;
-      let eraser = false;
-      let penSize = 2;
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background-color: #000001;
+    }
+
+    .toolbar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #333333;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      gap: 10px;
+      flex-direction: column;
+    }
+
+    .toolbar button {
+      color: #fffffe;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      background: none;
+    }
+
+    .toolbar button img {
+      width: 24px;
+      height: 24px;
+    }
+
+    .toolbar button.active {
+      background-color: #444444;
+    }
+
+    .draw-cursor {
+      cursor: none;
+    }
+
+    .toolbar input[type="range"] {
+      width: 100px;
+    }
+
+    .size-slider {
+      position: absolute;
+      display: none;
+      background: #333333;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .size-slider input {
+      outline: none;
+    }
+
+    #circleCursor {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    #outerCircle {
+      position: absolute;
+      border: 1px solid #fffffe;
+      border-radius: 50%;
+    }
+
+    #innerCircle {
+      position: absolute;
+      border: 1px solid #000001;
+      border-radius: 50%;
+      top: 1px;
+      left: 1px;
+    }
+  </style>
+</head>
+
+<body onresize="onResize()" onclick="onBodyClick(event)">
+  <canvas class="draw-cursor" id="drawCanvas" oncontextmenu="onRightClick(event)" onmouseup="onStopDrawing()"
+    onmouseleave="onMouseLeave()" onmousemove="onDraw(event)" onmousedown="onStartDrawing(event)"></canvas>
+  <div class="toolbar">
+    <button id="drawMode" onclick="onDrawModeClick()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-pencil">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+        <path d="M13.5 6.5l4 4" />
+      </svg>
+    </button>
+    <button id="eraserMode" onclick="onEraseModeClick()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-eraser">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3" />
+        <path d="M18 13.3l-6.3 -6.3" />
+      </svg>
+    </button>
+    <button id="clearCanvas" onclick="onClearCanvasClick()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-trash-x">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M4 7h16" />
+        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+        <path d="M10 12l4 4m0 -4l-4 4" />
+      </svg>
+    </button>
+    <button id="downloadCanvas" onclick="onDownloadCanvasClick()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-download">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+        <path d="M7 11l5 5l5 -5" />
+        <path d="M12 4l0 12" />
+      </svg>
+    </button>
+  </div>
+  <div class="size-slider" id="sizeSliderContainer">
+    <input type="range" id="sizeSlider" min="1" max="10" value="2" onchange="onSliderChange(event)" />
+  </div>
+  <div id="circleCursor">
+    <div id="outerCircle"></div>
+    <div id="innerCircle"></div>
+  </div>
+
+  <script>
+    const foregroundColor = "#fffffe";
+    const backgroundColor = "#000001";
+
+    const sizeSliderContainer = document.getElementById("sizeSliderContainer");
+    const circleCursor = document.getElementById("circleCursor");
+    const outerCircle = document.getElementById("outerCircle");
+    const innerCircle = document.getElementById("innerCircle");
+    const sizeSlider = document.getElementById("sizeSlider");
+    const canvas = document.getElementById("drawCanvas");
+    const context = canvas.getContext("2d");
+
+    let drawing = false;
+    let eraser = false;
+    let penSize = 2;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    context.strokeStyle = foregroundColor;
+    context.lineWidth = penSize;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.fillStyle = backgroundColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    onDrawModeClick();
+
+    function onStartDrawing(e) {
+      drawing = true;
+      context.moveTo(e.clientX, e.clientY);
+    }
+
+    function updateCursor(e) {
+      circleCursor.style.left = `${e.clientX - penSize / 2}px`;
+      circleCursor.style.top = `${e.clientY - penSize / 2}px`;
+
+      outerCircle.style.width = `${penSize}px`;
+      outerCircle.style.height = `${penSize}px`;
+
+      innerCircle.style.width = `${penSize - 2}px`;
+      innerCircle.style.height = `${penSize - 2}px`;
+    }
+
+    function onDraw(e) {
+      const { clientX, clientY } = e;
+      updateCursor(e);
+      if (drawing) {
+        if (eraser) {
+          context.save();
+          context.globalCompositeOperation = "destination-out";
+          context.beginPath();
+          context.arc(clientX, clientY, penSize / 2, 0, Math.PI * 2, false);
+          context.fill();
+          context.restore();
+        } else {
+          context.lineTo(clientX, clientY);
+          context.stroke();
+        }
+      }
+    }
+
+    function onStopDrawing() {
+      drawing = false;
+      context.beginPath();
+    }
+
+    function setActiveButton(buttonId) {
+      document.querySelectorAll(".toolbar button").forEach((button) => {
+        button.classList.remove("active");
+      });
+      document.getElementById(buttonId).classList.add("active");
+    }
+
+    function onDrawModeClick() {
+      eraser = false;
+      context.strokeStyle = foregroundColor;
+      sizeSlider.min = "1";
+      sizeSlider.max = "10";
+      sizeSlider.value = "1";
+      penSize = 2;
+      context.lineWidth = penSize;
+      setActiveButton("drawMode");
+    }
+
+    function onEraseModeClick() {
+      eraser = true;
+      context.strokeStyle = backgroundColor;
+      sizeSlider.min = "10";
+      sizeSlider.max = "50";
+      sizeSlider.value = "10";
+      penSize = 10;
+      context.lineWidth = penSize;
+      setActiveButton("eraserMode");
+    }
+
+    function onClearCanvasClick() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = backgroundColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      onDrawModeClick();
+    }
+
+    function onDownloadCanvasClick() {
+      const link = document.createElement("a");
+      link.download = `freedraw-${Date.now()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function onResize() {
+      const tempCanvas = document.createElement("canvas");
+      const tempContext = tempCanvas.getContext("2d");
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      tempContext.drawImage(canvas, 0, 0);
 
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      context.strokeStyle = foregroundColor;
-      context.lineWidth = penSize;
-      context.lineCap = "round";
-
-      canvas.addEventListener("mousedown", (e) => {
-        drawing = true;
-        context.moveTo(e.clientX, e.clientY);
-      });
-
-      function updateCursor(e) {
-        const cursor = document.getElementById("circleCursor");
-        if (!cursor) {
-          const newCursor = document.createElement("div");
-          newCursor.id = "circleCursor";
-          newCursor.style.position = "absolute";
-          newCursor.style.pointerEvents = "none";
-          newCursor.innerHTML = `
-            <div id="outerCircle" style="position: absolute; border: 1px solid ${foregroundColor}; border-radius: 50%;"></div>
-            <div id="innerCircle" style="position: absolute; border: 1px solid ${backgroundColor}; border-radius: 50%;"></div>
-          `;
-          document.body.appendChild(newCursor);
-        }
-
-        const circleCursor = document.getElementById("circleCursor");
-        circleCursor.style.left = `${e.clientX - penSize / 2}px`;
-        circleCursor.style.top = `${e.clientY - penSize / 2}px`;
-        const outerCircle = document.getElementById("outerCircle");
-        const innerCircle = document.getElementById("innerCircle");
-        outerCircle.style.width = `${penSize}px`;
-        outerCircle.style.height = `${penSize}px`;
-        innerCircle.style.width = `${penSize - 2}px`;
-        innerCircle.style.height = `${penSize - 2}px`;
-        innerCircle.style.position = "absolute";
-        innerCircle.style.left = "1px";
-        innerCircle.style.top = "1px";
-      }
-
-      canvas.addEventListener("mousemove", (e) => {
-        updateCursor(e);
-        if (drawing) {
-          if (eraser) {
-            context.save();
-            context.globalCompositeOperation = "destination-out";
-            context.beginPath();
-            context.arc(
-              e.clientX,
-              e.clientY,
-              penSize / 2,
-              0,
-              Math.PI * 2,
-              false
-            );
-            context.fill();
-            context.restore();
-          } else {
-            context.lineTo(e.clientX, e.clientY);
-            context.stroke();
-          }
-        }
-      });
-
-      canvas.addEventListener("mouseup", () => {
-        drawing = false;
-        context.beginPath();
-      });
-
-      function setActiveButton(buttonId) {
-        document.querySelectorAll(".toolbar button").forEach((button) => {
-          button.classList.remove("active");
-        });
-        document.getElementById(buttonId).classList.add("active");
-      }
-
-      function onDrawModeClick() {
-        eraser = false;
-        context.strokeStyle = foregroundColor;
-        canvas.classList.add("circle-cursor");
-        const cursor = document.getElementById("eraserCursor");
-        if (cursor) {
-          cursor.remove();
-        }
-        const sizeSlider = document.getElementById("sizeSlider");
-        sizeSlider.min = "1";
-        sizeSlider.max = "10";
-        sizeSlider.value = 1;
-        penSize = 2;
-        context.lineWidth = penSize;
-        setActiveButton("drawMode");
-      }
-
-      function onEraseModeClick() {
-        eraser = true;
-        context.strokeStyle = backgroundColor;
-        canvas.classList.add("circle-cursor");
-        const cursor = document.createElement("div");
-        cursor.id = "eraserCursor";
-        cursor.style.position = "absolute";
-        cursor.style.border = `1px solid ${foregroundColor}`;
-        cursor.style.borderRadius = "50%";
-        cursor.style.pointerEvents = "none";
-        document.body.appendChild(cursor);
-        const sizeSlider = document.getElementById("sizeSlider");
-        sizeSlider.min = "10";
-        sizeSlider.max = "50";
-        sizeSlider.value = 10;
-        penSize = 10;
-        context.lineWidth = penSize;
-        setActiveButton("eraserMode");
-      }
-
-      function onClearCanvasClick() {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = backgroundColor;
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        onDrawModeClick();
-      }
-
-      function onDownloadCanvasClick() {
-        const link = document.createElement("a");
-        link.download = `freedraw-${Date.now()}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      }
-
-      function onResize() {
-        const tempCanvas = document.createElement("canvas");
-        const tempContext = tempCanvas.getContext("2d");
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
-        tempContext.drawImage(canvas, 0, 0);
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        context.fillStyle = backgroundColor;
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(tempCanvas, 0, 0);
-        if (eraser) {
-          onEraseModeClick();
-        } else {
-          onDrawModeClick();
-        }
-      }
-
-      function onRightClick(e) {
-        e.preventDefault();
-        drawing = false;
-        context.beginPath();
-
-        sizeSliderContainer.style.display = "block";
-        sizeSliderContainer.style.left = `${e.clientX}px`;
-        sizeSliderContainer.style.top = `${e.clientY}px`;
-      }
-
-      document
-        .getElementById("drawMode")
-        .addEventListener("click", onDrawModeClick);
-
-      document
-        .getElementById("eraserMode")
-        .addEventListener("click", onEraseModeClick);
-
-      document
-        .getElementById("clearCanvas")
-        .addEventListener("click", onClearCanvasClick);
-
-      document.getElementById("sizeSlider").addEventListener("input", (e) => {
-        penSize = e.target.value;
-        context.lineWidth = penSize;
-      });
-
-      document
-        .getElementById("downloadCanvas")
-        .addEventListener("click", onDownloadCanvasClick);
-
-      canvas.addEventListener("contextmenu", onRightClick);
-
-      document.addEventListener("click", (e) => {
-        if (!sizeSliderContainer.contains(e.target)) {
-          sizeSliderContainer.style.display = "none";
-        }
-      });
-
-      // Set initial cursor and active button
-      canvas.classList.add("draw-cursor");
-      onDrawModeClick();
-
-      // Set initial canvas background
       context.fillStyle = backgroundColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
-
-      window.addEventListener("resize", onResize);
-
-      window.addEventListener("message", (event) => {
-        const message = event.data;
-        if (message.command === "restoreCanvas") {
-          const img = new Image();
-          img.onload = () => context.drawImage(img, 0, 0);
-          img.src = message.data;
-        }
-      });
-
-      // Save the canvas content
-      function saveCanvas() {
-        const dataUrl = canvas.toDataURL();
-        vscode.postMessage({ command: "saveCanvas", data: dataUrl });
+      context.drawImage(tempCanvas, 0, 0);
+      if (eraser) {
+        onEraseModeClick();
+      } else {
+        onDrawModeClick();
       }
+    }
 
-      // Save the canvas content before the window is unloaded
-      window.addEventListener("beforeunload", saveCanvas);
+    function onRightClick(e) {
+      e.preventDefault();
+      drawing = false;
+      context.beginPath();
 
-      setInterval(() => {
-        currentModeElement.innerText = eraser ? "Eraser" : "Pen";
-        strokeColorElement.innerText = context.strokeStyle;
-        strokeWidthElement.innerText = penSize;
-      }, 1000);
-    </script>
-  </body>
+      sizeSliderContainer.style.display = "block";
+      sizeSliderContainer.style.left = `${e.clientX}px`;
+      sizeSliderContainer.style.top = `${e.clientY}px`;
+    }
+
+    function onSliderChange(e) {
+      penSize = e.target.value;
+      context.lineWidth = penSize;
+    }
+
+    function onBodyClick(e) {
+      if (!sizeSliderContainer.contains(e.target)) {
+        sizeSliderContainer.style.display = "none";
+      }
+    }
+
+    function saveCanvas() {
+      const dataUrl = canvas.toDataURL();
+      vscode.postMessage({ command: "saveCanvas", data: dataUrl });
+    }
+
+    function onMouseLeave() {
+      drawing = false;
+      context.beginPath();
+    }
+
+    // Save the canvas content before the window is unloaded
+    window.addEventListener("beforeunload", saveCanvas);
+
+    window.addEventListener("message", (event) => {
+      const message = event.data;
+      if (message.command === "restoreCanvas") {
+        const img = new Image();
+        img.onload = () => context.drawImage(img, 0, 0);
+        img.src = message.data;
+      }
+    });
+  </script>
+</body>
+
 </html>
