@@ -3,11 +3,14 @@
   "displayName": "FreeDraw",
   "description": "Draw freely in VSCode",
   "version": "0.0.1",
+  "license": "GPL-3.0-only",
   "engines": {
     "vscode": "^1.96.0"
   },
   "categories": [
-    "Other"
+    "VSCode Extension",
+    "Drawing",
+    "Utilities"
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
@@ -34,7 +37,6 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/color": "^4.2.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
     "@types/vscode": "^1.96.0",
@@ -48,7 +50,5 @@
     "typescript": "^5.7.2"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
-  "dependencies": {
-    "color": "^4.2.3"
-  }
+  "dependencies": {}
 }

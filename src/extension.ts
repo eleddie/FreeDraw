@@ -1,28 +1,27 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import Color from "color";
 
 function getWebviewContent(
   context: vscode.ExtensionContext,
-  isDark: boolean,
-  foregroundColor: string,
-  backgroundColor: string
+  panel: vscode.WebviewPanel
 ) {
   const filePath: vscode.Uri = vscode.Uri.file(
     path.join(context.extensionPath, "src", "html", "canvas.html")
   );
   let html = fs.readFileSync(filePath.fsPath, "utf8");
-  const colorMap = {
-    "#fffffe": foregroundColor,
-    "#000001": backgroundColor,
-    "#333333": isDark ? "#333333" : Color(backgroundColor).darken(0.3).hex(),
-    "#444444": isDark ? "#444444" : Color(backgroundColor).darken(0.2).hex(),
-  };
-  for (const [key, value] of Object.entries(colorMap)) {
-    html = html.replaceAll(key, value);
-  }
-  console.log(html);
+
+  const webviewUri = (file: string) =>
+    panel.webview
+      .asWebviewUri(
+        vscode.Uri.file(path.join(context.extensionPath, "src", "html", file))
+      )
+      .toString();
+
+  html = html
+    .replace("./canvas.css", webviewUri("canvas.css"))
+    .replace("./canvas.js", webviewUri("canvas.js"));
+
   return html;
 }
 
@@ -36,21 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
         { enableScripts: true, retainContextWhenHidden: true }
       );
 
-      const themeKind = vscode.window.activeColorTheme.kind;
-
-      const isDark = [
-        vscode.ColorThemeKind.Dark,
-        vscode.ColorThemeKind.HighContrast,
-      ].includes(themeKind);
-      const foregroundColor = isDark ? "#ffffff" : "#000000";
-      const backgroundColor = isDark ? "#000000" : "#ffffff";
-
-      panel.webview.html = getWebviewContent(
-        context,
-        isDark,
-        foregroundColor,
-        backgroundColor
-      );
+      panel.webview.html = getWebviewContent(context, panel);
 
       // Restore the canvas content from the global state
       const savedCanvas = context.globalState.get<string>("savedCanvas");
