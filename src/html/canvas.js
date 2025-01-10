@@ -217,7 +217,9 @@ function onMouseUpCanvas(e) {
       }
       break;
     case State.MOVE:
-      currentState.movingSelection = false;
+      if (currentState.movingSelection) {
+        currentState.movingSelection = false;
+      }
       break;
   }
 }
@@ -498,6 +500,8 @@ function onEndSelection(e) {
     selectionRectangle.style.top = `${top}px`;
     selectionRectangle.style.width = `${Math.abs(width)}px`;
     selectionRectangle.style.height = `${Math.abs(height)}px`;
+
+    saveState(); // Save the state after ending the selection
   }
 }
 
