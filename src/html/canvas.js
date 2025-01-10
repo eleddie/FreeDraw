@@ -350,6 +350,24 @@ function handleKeyDown(e) {
   ) {
     e.preventDefault();
     onRedo();
+  } else if (e.key === "b") {
+    e.preventDefault();
+    onDrawModeClick();
+  } else if (e.key === "e") {
+    e.preventDefault();
+    onEraseModeClick();
+  } else if (e.key === "m") {
+    e.preventDefault();
+    onSelectModeClick();
+  } else if (e.key === "d") {
+    e.preventDefault();
+    onClearCanvasClick();
+  } else if (e.key === "c") {
+    e.preventDefault();
+    onChangeColor();
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    onDownloadCanvasClick();
   }
 }
 
