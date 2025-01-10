@@ -1,6 +1,6 @@
 const root = document.documentElement;
 const getColor = (color) => getComputedStyle(root).getPropertyValue(color);
-const foregroundColor = getColor("--primary-color");
+let foregroundColor = getColor("--primary-color");
 const backgroundColor = getColor("--secondary-color");
 const dotsColor = getColor("--tertiary-color");
 
@@ -11,6 +11,7 @@ const innerCircle = document.getElementById("innerCircle");
 const sizeSlider = document.getElementById("sizeSlider");
 const canvas = document.getElementById("drawCanvas");
 const context = canvas.getContext("2d");
+const colorPicker = document.getElementById("colorPicker");
 
 let drawing = false;
 let eraser = false;
@@ -28,7 +29,46 @@ context.fillRect(0, 0, canvas.width, canvas.height);
 
 onDrawModeClick();
 
+let undoStack = [];
+let redoStack = [];
+
+function saveState() {
+  const dataUrl = canvas.toDataURL();
+  undoStack.push(dataUrl);
+  redoStack = []; // Clear the redo stack whenever a new action is taken
+  if (undoStack.length > 10) {
+    undoStack.shift(); // Limit the undo stack to 10 states
+  }
+}
+
+function onUndo() {
+  if (undoStack.length > 0) {
+    const dataUrl = undoStack.pop();
+    redoStack.push(canvas.toDataURL()); // Save the current state to the redo stack
+    const img = new Image();
+    img.onload = () => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(img, 0, 0);
+    };
+    img.src = dataUrl;
+  }
+}
+
+function onRedo() {
+  if (redoStack.length > 0) {
+    const dataUrl = redoStack.pop();
+    undoStack.push(canvas.toDataURL()); // Save the current state to the undo stack
+    const img = new Image();
+    img.onload = () => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(img, 0, 0);
+    };
+    img.src = dataUrl;
+  }
+}
+
 function onStartDrawing(e) {
+  saveState();
   drawing = true;
   context.moveTo(e.clientX, e.clientY);
 }
@@ -97,6 +137,7 @@ function onEraseModeClick() {
 }
 
 function onClearCanvasClick() {
+  saveState();
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = backgroundColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
@@ -160,6 +201,34 @@ function onMouseLeave() {
   drawing = false;
   context.beginPath();
 }
+
+function handleKeyDown(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+    e.preventDefault();
+    onUndo();
+  } else if (
+    (e.ctrlKey || e.metaKey) &&
+    (e.key === "y" || (e.key === "z" && e.shiftKey))
+  ) {
+    e.preventDefault();
+    onRedo();
+  }
+}
+
+function onChangeColor() {
+  document.getElementById("colorPicker").click();
+}
+
+function onColorSelected(e) {
+  foregroundColor = e.target.value;
+  document.getElementById("selectedColorIndicator").style.backgroundColor =
+    foregroundColor;
+  if (!eraser) {
+    context.strokeStyle = foregroundColor;
+  }
+}
+
+document.addEventListener("keydown", handleKeyDown);
 
 window.addEventListener("beforeunload", saveCanvas);
 

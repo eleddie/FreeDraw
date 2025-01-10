@@ -31,7 +31,7 @@
   <canvas class="draw-cursor" id="drawCanvas" oncontextmenu="onRightClick(event)" onmouseup="onStopDrawing()"
     onmouseleave="onMouseLeave()" onmousemove="onDraw(event)" onmousedown="onStartDrawing(event)"></canvas>
   <div class="toolbar">
-    <button id="drawMode" onclick="onDrawModeClick()">
+    <button id="drawMode" onclick="onDrawModeClick()" title="Draw Mode">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-pencil">
@@ -39,8 +39,9 @@
         <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
         <path d="M13.5 6.5l4 4" />
       </svg>
+      <div id="selectedColorIndicator" class="color-indicator"></div>
     </button>
-    <button id="eraserMode" onclick="onEraseModeClick()">
+    <button id="eraserMode" onclick="onEraseModeClick()" title="Eraser Mode">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-eraser">
@@ -49,7 +50,39 @@
         <path d="M18 13.3l-6.3 -6.3" />
       </svg>
     </button>
-    <button id="clearCanvas" onclick="onClearCanvasClick()">
+    <button id="colorPickerButton" title="Pick Color" onclick="onChangeColor()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-palette">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path
+          d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25" />
+        <path d="M8.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+        <path d="M12.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+        <path d="M16.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+      </svg>
+      <input type="color" id="colorPicker" class="color-picker" oninput="onColorSelected(event)" />
+    </button>
+    <button id="undoButton" onclick="onUndo()" title="Undo (Ctrl+Z)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-back-up">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M9 14l-4 -4l4 -4" />
+        <path d="M5 10h11a4 4 0 1 1 0 8h-1" />
+      </svg>
+    </button>
+    <button id="redoButton" onclick="onRedo()" title="Redo (Ctrl+Shift+Z)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-forward-up">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M15 14l4 -4l-4 -4" />
+        <path d="M19 10h-11a4 4 0 1 0 0 8h1" />
+      </svg>
+    </button>
+    <hr />
+    <button id="clearCanvas" onclick="onClearCanvasClick()" title="Clear Canvas">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-trash-x">
@@ -60,7 +93,7 @@
         <path d="M10 12l4 4m0 -4l-4 4" />
       </svg>
     </button>
-    <button id="downloadCanvas" onclick="onDownloadCanvasClick()">
+    <button id="downloadCanvas" onclick="onDownloadCanvasClick()" title="Download Canvas">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-download">
@@ -70,6 +103,7 @@
         <path d="M12 4l0 12" />
       </svg>
     </button>
+
   </div>
   <div class="size-slider" id="sizeSliderContainer">
     <input type="range" id="sizeSlider" min="1" max="10" value="2" onchange="onSliderChange(event)" />
