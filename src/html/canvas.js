@@ -279,9 +279,23 @@ function onEraseModeClick() {
 }
 
 function onClearCanvasClick() {
+  const dialog = document.getElementById("clearCanvasDialog");
+  dialog.showModal();
+  dialog.addEventListener("close", () => {
+    if (dialog.returnValue === "confirm") {
+      confirmClearCanvas();
+    }
+  });
+}
+
+function confirmClearCanvas() {
   saveState();
   context.clearRect(0, 0, canvas.width, canvas.height);
   onDrawModeClick();
+}
+
+function cancelClearCanvas() {
+  document.getElementById("clearCanvasDialog").style.display = "none";
 }
 
 function onDownloadCanvasClick() {

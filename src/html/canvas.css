@@ -122,3 +122,90 @@ canvas {
     display: none;
     pointer-events: none;
 }
+
+.dialog {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--tertiary-color);
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.dialog-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.dialog-content p {
+    margin-bottom: 20px;
+    color: var(--primary-color);
+}
+
+.dialog-content button {
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: var(--quaternary-color);
+    color: var(--primary-color);
+}
+
+.dialog-content button:hover {
+    background: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+dialog {
+    background: var(--tertiary-color);
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    border: none;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+dialog form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* Align items to the right */
+}
+
+dialog form p {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    align-self: flex-start;
+    /* Align the paragraph to the left */
+}
+
+dialog form .button-container {
+    display: flex;
+    gap: 10px;
+    /* Add space between buttons */
+}
+
+dialog form button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: var(--quaternary-color);
+    color: var(--primary-color);
+}
+
+dialog form button:hover {
+    background: var(--primary-color);
+    color: var(--secondary-color);
+}
