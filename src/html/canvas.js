@@ -14,11 +14,23 @@ const context = canvas.getContext("2d", { willReadFrequently: true });
 const colorPicker = document.getElementById("colorPicker");
 const selectionRectangle = document.getElementById("selectionRectangle");
 
+const shapeButtons = {
+  rectangle: document.getElementById("rectangleButton"),
+  circle: document.getElementById("circleButton"),
+  arrow: document.getElementById("arrowButton"),
+};
+
 const State = {
   DRAW: "DRAW",
   ERASE: "ERASE",
   SELECT: "SELECT",
   MOVE: "MOVE",
+};
+
+const Shapes = {
+  RECTANGLE: "rectangle",
+  CIRCLE: "circle",
+  ARROW: "arrow",
 };
 
 let currentState = {
@@ -105,12 +117,25 @@ function updateCursor(e) {
 function onMouseDownCanvas(e) {
   switch (currentState.mode) {
     case State.DRAW:
+    case Shapes.RECTANGLE:
+    case Shapes.CIRCLE:
+    case Shapes.ARROW:
       saveState();
       currentState.drawing = true;
       currentState.startX = e.clientX;
       currentState.startY = e.clientY;
+      currentState.initialX = e.clientX; // Store initial X position
+      currentState.initialY = e.clientY; // Store initial Y position
       currentState.lockedDirection = null; // Reset locked direction
+      currentState.endX = e.clientX; // Initialize endX
+      currentState.endY = e.clientY; // Initialize endY
       context.moveTo(e.clientX, e.clientY);
+      currentState.tempCanvasContent = context.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      ); // Initialize tempCanvasContent
       break;
     case State.ERASE:
       saveState();
@@ -165,6 +190,9 @@ function onMouseMoveCanvas(e) {
   switch (currentState.mode) {
     case State.DRAW:
     case State.ERASE:
+    case Shapes.RECTANGLE:
+    case Shapes.CIRCLE:
+    case Shapes.ARROW:
       const { clientX, clientY } = e;
       updateCursor(e);
       if (currentState.drawing) {
@@ -183,38 +211,58 @@ function onMouseMoveCanvas(e) {
           context.fill();
           context.restore();
         } else {
-          if (e.shiftKey && e.altKey) {
-            const dx = clientX - currentState.startX;
-            const dy = clientY - currentState.startY;
-            const absDx = Math.abs(dx);
-            const absDy = Math.abs(dy);
-            if (absDx > absDy) {
-              context.lineTo(
-                currentState.startX + (dx > 0 ? absDy : -absDy),
-                currentState.startY + (dy > 0 ? absDy : -absDy)
-              );
-            } else {
-              context.lineTo(
-                currentState.startX + (dx > 0 ? absDx : -absDx),
-                currentState.startY + (dy > 0 ? absDx : -absDx)
-              );
-            }
-          } else if (e.shiftKey) {
-            if (!currentState.lockedDirection) {
-              const dx = Math.abs(clientX - currentState.startX);
-              const dy = Math.abs(clientY - currentState.startY);
-              currentState.lockedDirection =
-                dx > dy ? "horizontal" : "vertical";
-            }
-            if (currentState.lockedDirection === "horizontal") {
-              context.lineTo(clientX, currentState.startY);
-            } else {
-              context.lineTo(currentState.startX, clientY);
-            }
+          if (
+            currentState.mode === Shapes.RECTANGLE ||
+            currentState.mode === Shapes.CIRCLE ||
+            currentState.mode === Shapes.ARROW
+          ) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.putImageData(currentState.tempCanvasContent, 0, 0);
+
+            currentState.endX = clientX;
+            currentState.endY = clientY;
+            drawShape(
+              currentState.mode,
+              currentState.startX,
+              currentState.startY,
+              clientX,
+              clientY,
+              e.shiftKey
+            );
           } else {
-            context.lineTo(clientX, clientY);
+            if (e.shiftKey && e.altKey) {
+              const dx = clientX - currentState.startX;
+              const dy = clientY - currentState.startY;
+              const absDx = Math.abs(dx);
+              const absDy = Math.abs(dy);
+              if (absDx > absDy) {
+                context.lineTo(
+                  currentState.startX + (dx > 0 ? absDy : -absDy),
+                  currentState.startY + (dy > 0 ? absDy : -absDy)
+                );
+              } else {
+                context.lineTo(
+                  currentState.startX + (dx > 0 ? absDx : -absDx),
+                  currentState.startY + (dy > 0 ? absDx : -absDx)
+                );
+              }
+            } else if (e.shiftKey) {
+              if (!currentState.lockedDirection) {
+                const dx = Math.abs(clientX - currentState.startX);
+                const dy = Math.abs(clientY - currentState.startY);
+                currentState.lockedDirection =
+                  dx > dy ? "horizontal" : "vertical";
+              }
+              if (currentState.lockedDirection === "horizontal") {
+                context.lineTo(clientX, currentState.startY);
+              } else {
+                context.lineTo(currentState.startX, clientY);
+              }
+            } else {
+              context.lineTo(clientX, clientY);
+            }
+            context.stroke();
           }
-          context.stroke();
         }
       }
       break;
@@ -235,6 +283,9 @@ function onMouseUpCanvas(e) {
   switch (currentState.mode) {
     case State.DRAW:
     case State.ERASE:
+    case Shapes.RECTANGLE:
+    case Shapes.CIRCLE:
+    case Shapes.ARROW:
       currentState.drawing = false;
       context.beginPath();
       break;
@@ -582,4 +633,91 @@ function onEndSelection(e) {
 function isInsideSelection(x, y) {
   const rect = selectionRectangle.getBoundingClientRect();
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+function onShapeModeClick(shape) {
+  currentState = {
+    mode: shape,
+    color: currentState.color,
+    penSize: currentState.penSize,
+    eraser: false,
+    drawing: false,
+    makingSelection: false,
+    movingSelection: false,
+    selectionStart: null,
+    selectionEnd: null,
+    selectedImageData: null,
+  };
+  canvas.classList.remove("canvas-selection");
+  canvas.classList.add("draw-cursor");
+  circleCursor.style.display = "block"; // Show the drawing cursor
+  selectionRectangle.style.display = "none"; // Hide the selection box
+  context.strokeStyle = currentState.color;
+  context.lineWidth = currentState.penSize;
+  setActiveButton(`${shape}Button`);
+}
+
+function drawShape(shape, startX, startY, endX, endY, shiftKey) {
+  context.beginPath();
+  switch (shape) {
+    case Shapes.RECTANGLE:
+      if (shiftKey) {
+        const size = Math.min(Math.abs(endX - startX), Math.abs(endY - startY));
+        context.rect(
+          startX,
+          startY,
+          size * Math.sign(endX - startX),
+          size * Math.sign(endY - startY)
+        );
+      } else {
+        context.rect(startX, startY, endX - startX, endY - startY);
+      }
+      break;
+    case Shapes.CIRCLE:
+      if (shiftKey) {
+        const radius = Math.min(
+          Math.abs(endX - startX),
+          Math.abs(endY - startY)
+        );
+        context.arc(startX, startY, radius, 0, Math.PI * 2);
+      } else {
+        const radiusX = Math.abs(endX - startX);
+        const radiusY = Math.abs(endY - startY);
+        context.ellipse(startX, startY, radiusX, radiusY, 0, 0, Math.PI * 2);
+      }
+      break;
+    case Shapes.ARROW:
+      if (shiftKey) {
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
+        if (absDx > absDy * 1.5) {
+          endY = startY;
+        } else if (absDy > absDx * 1.5) {
+          endX = startX;
+        } else {
+          const signX = Math.sign(dx);
+          const signY = Math.sign(dy);
+          const size = Math.min(absDx, absDy);
+          endX = startX + size * signX;
+          endY = startY + size * signY;
+        }
+      }
+      const headlen = 10; // length of head in pixels
+      const angle = Math.atan2(endY - startY, endX - startX);
+      context.moveTo(startX, startY);
+      context.lineTo(endX, endY);
+      context.lineTo(
+        endX - headlen * Math.cos(angle - Math.PI / 6),
+        endY - headlen * Math.sin(angle - Math.PI / 6)
+      );
+      context.moveTo(endX, endY);
+      context.lineTo(
+        endX - headlen * Math.cos(angle + Math.PI / 6),
+        endY - headlen * Math.sin(angle + Math.PI / 6)
+      );
+      break;
+  }
+  context.stroke();
 }

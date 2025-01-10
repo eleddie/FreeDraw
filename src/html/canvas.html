@@ -65,6 +65,43 @@
       </svg>
       <input type="color" id="colorPicker" class="color-picker" oninput="onColorSelected(event)" />
     </button>
+    <button id="selectMode" onclick="onSelectModeClick()" title="Select Mode">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-marquee">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path
+          d="M4 6a2 2 0 0 1 2 -2m3 0h1.5m3 0h1.5m3 0a2 2 0 0 1 2 2m0 3v1.5m0 3v1.5m0 3a2 2 0 0 1 -2 2m-3 0h-1.5m-3 0h-1.5m-3 0a2 2 0 0 1 -2 -2m0 -3v-1.5m0 -3v-1.5m0 -3" />
+      </svg>
+    </button>
+    <hr />
+    <button id="rectangleButton" onclick="onShapeModeClick('rectangle')" title="Draw Rectangle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-square">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+      </svg>
+    </button>
+    <button id="circleButton" onclick="onShapeModeClick('circle')" title="Draw Circle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-circle">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <circle cx="12" cy="12" r="9" />
+      </svg>
+    </button>
+    <button id="arrowButton" onclick="onShapeModeClick('arrow')" title="Draw Arrow">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-right">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <line x1="13" y1="18" x2="19" y2="12" />
+        <line x1="13" y1="6" x2="19" y2="12" />
+      </svg>
+    </button>
+    <hr />
     <button id="undoButton" onclick="onUndo()" title="Undo (Ctrl+Z)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -81,15 +118,6 @@
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M15 14l4 -4l-4 -4" />
         <path d="M19 10h-11a4 4 0 1 0 0 8h1" />
-      </svg>
-    </button>
-    <button id="selectMode" onclick="onSelectModeClick()" title="Select Mode">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-marquee">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path
-          d="M4 6a2 2 0 0 1 2 -2m3 0h1.5m3 0h1.5m3 0a2 2 0 0 1 2 2m0 3v1.5m0 3v1.5m0 3a2 2 0 0 1 -2 2m-3 0h-1.5m-3 0h-1.5m-3 0a2 2 0 0 1 -2 -2m0 -3v-1.5m0 -3v-1.5m0 -3" />
       </svg>
     </button>
     <hr />
