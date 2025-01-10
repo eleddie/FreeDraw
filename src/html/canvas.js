@@ -48,6 +48,11 @@ onDrawModeClick();
 let undoStack = [];
 let redoStack = [];
 
+function updateUndoRedoButtons() {
+  document.getElementById("undoButton").disabled = undoStack.length === 0;
+  document.getElementById("redoButton").disabled = redoStack.length === 0;
+}
+
 function saveState() {
   const dataUrl = canvas.toDataURL();
   undoStack.push(dataUrl);
@@ -55,6 +60,7 @@ function saveState() {
   if (undoStack.length > 10) {
     undoStack.shift(); // Limit the undo stack to 10 states
   }
+  updateUndoRedoButtons();
 }
 
 function onUndo() {
@@ -67,6 +73,7 @@ function onUndo() {
       context.drawImage(img, 0, 0);
     };
     img.src = dataUrl;
+    updateUndoRedoButtons();
   }
 }
 
@@ -80,6 +87,7 @@ function onRedo() {
       context.drawImage(img, 0, 0);
     };
     img.src = dataUrl;
+    updateUndoRedoButtons();
   }
 }
 
@@ -409,6 +417,7 @@ window.addEventListener("message", (event) => {
     img.onload = () => context.drawImage(img, 0, 0);
     img.src = message.data;
   }
+  updateUndoRedoButtons();
 });
 
 function onSelectModeClick() {

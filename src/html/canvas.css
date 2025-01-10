@@ -46,6 +46,11 @@ canvas {
     background: var(--quaternary-color)
 }
 
+.toolbar button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .canvas-selection {
     cursor: crosshair;
 }
