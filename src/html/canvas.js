@@ -107,6 +107,9 @@ function onMouseDownCanvas(e) {
     case State.DRAW:
       saveState();
       currentState.drawing = true;
+      currentState.startX = e.clientX;
+      currentState.startY = e.clientY;
+      currentState.lockedDirection = null; // Reset locked direction
       context.moveTo(e.clientX, e.clientY);
       break;
     case State.ERASE:
@@ -180,7 +183,37 @@ function onMouseMoveCanvas(e) {
           context.fill();
           context.restore();
         } else {
-          context.lineTo(clientX, clientY);
+          if (e.shiftKey && e.altKey) {
+            const dx = clientX - currentState.startX;
+            const dy = clientY - currentState.startY;
+            const absDx = Math.abs(dx);
+            const absDy = Math.abs(dy);
+            if (absDx > absDy) {
+              context.lineTo(
+                currentState.startX + (dx > 0 ? absDy : -absDy),
+                currentState.startY + (dy > 0 ? absDy : -absDy)
+              );
+            } else {
+              context.lineTo(
+                currentState.startX + (dx > 0 ? absDx : -absDx),
+                currentState.startY + (dy > 0 ? absDx : -absDx)
+              );
+            }
+          } else if (e.shiftKey) {
+            if (!currentState.lockedDirection) {
+              const dx = Math.abs(clientX - currentState.startX);
+              const dy = Math.abs(clientY - currentState.startY);
+              currentState.lockedDirection =
+                dx > dy ? "horizontal" : "vertical";
+            }
+            if (currentState.lockedDirection === "horizontal") {
+              context.lineTo(clientX, currentState.startY);
+            } else {
+              context.lineTo(currentState.startX, clientY);
+            }
+          } else {
+            context.lineTo(clientX, clientY);
+          }
           context.stroke();
         }
       }
