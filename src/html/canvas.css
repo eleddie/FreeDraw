@@ -5,13 +5,14 @@ html {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background-color: var(--secondary-color);
+    /* Set background color on body */
 }
 
 canvas {
     display: block;
     width: 100%;
     height: 100%;
-    background-color: var(--secondary-color)
 }
 
 .toolbar {
@@ -43,6 +44,10 @@ canvas {
 
 .toolbar button.active {
     background: var(--quaternary-color)
+}
+
+.canvas-selection {
+    cursor: crosshair;
 }
 
 .draw-cursor {
@@ -109,4 +114,11 @@ canvas {
     background: var(--quaternary-color);
     font-size: 0;
     border: 0;
+}
+
+.selection-rectangle {
+    position: absolute;
+    border: 1px dashed var(--primary-color);
+    display: none;
+    pointer-events: none;
 }

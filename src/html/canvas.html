@@ -28,8 +28,9 @@
 </head>
 
 <body onresize="onResize()" onclick="onBodyClick(event)">
-  <canvas class="draw-cursor" id="drawCanvas" oncontextmenu="onRightClick(event)" onmouseup="onStopDrawing()"
-    onmouseleave="onMouseLeave()" onmousemove="onDraw(event)" onmousedown="onStartDrawing(event)"></canvas>
+  <canvas class="draw-cursor" id="drawCanvas" oncontextmenu="onRightClick(event)" onmouseup="onMouseUpCanvas(event)"
+    onmouseleave="onMouseLeaveCanvas(event)" onmousemove="onMouseMoveCanvas(event)"
+    onmousedown="onMouseDownCanvas(event)"></canvas>
   <div class="toolbar">
     <button id="drawMode" onclick="onDrawModeClick()" title="Draw Mode">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -50,6 +51,7 @@
         <path d="M18 13.3l-6.3 -6.3" />
       </svg>
     </button>
+
     <button id="colorPickerButton" title="Pick Color" onclick="onChangeColor()">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -79,6 +81,15 @@
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M15 14l4 -4l-4 -4" />
         <path d="M19 10h-11a4 4 0 1 0 0 8h1" />
+      </svg>
+    </button>
+    <button id="selectMode" onclick="onSelectModeClick()" title="Select Mode">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-marquee">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path
+          d="M4 6a2 2 0 0 1 2 -2m3 0h1.5m3 0h1.5m3 0a2 2 0 0 1 2 2m0 3v1.5m0 3v1.5m0 3a2 2 0 0 1 -2 2m-3 0h-1.5m-3 0h-1.5m-3 0a2 2 0 0 1 -2 -2m0 -3v-1.5m0 -3v-1.5m0 -3" />
       </svg>
     </button>
     <hr />
@@ -112,6 +123,7 @@
     <div id="outerCircle"></div>
     <div id="innerCircle"></div>
   </div>
+  <div id="selectionRectangle" class="selection-rectangle"></div>
 </body>
 
 </html>
