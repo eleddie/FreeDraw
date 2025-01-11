@@ -636,6 +636,7 @@ function isInsideSelection(x, y) {
 }
 
 function onShapeModeClick(shape) {
+  onDrawModeClick();
   currentState = {
     mode: shape,
     color: currentState.color,
