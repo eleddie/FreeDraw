@@ -37,7 +37,7 @@
     onmouseleave="onMouseLeaveCanvas(event)" onmousemove="onMouseMoveCanvas(event)"
     onmousedown="onMouseDownCanvas(event)"></canvas>
   <div class="toolbar">
-    <button id="drawMode" onclick="onDrawModeClick()" title="Draw Mode">
+    <button id="drawMode" onclick="onDrawModeClick()" title="Brush (B)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-pencil">
@@ -47,17 +47,8 @@
       </svg>
       <div id="selectedColorIndicator" class="color-indicator"></div>
     </button>
-    <button id="eraserMode" onclick="onEraseModeClick()" title="Eraser Mode">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-eraser">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3" />
-        <path d="M18 13.3l-6.3 -6.3" />
-      </svg>
-    </button>
 
-    <button id="colorPickerButton" title="Pick Color" onclick="onChangeColor()">
+    <button id="colorPickerButton" title="Pick Color (P)" onclick="onChangeColor()">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-palette">
@@ -70,7 +61,18 @@
       </svg>
       <input type="color" id="colorPicker" class="color-picker" oninput="onColorSelected(event)" />
     </button>
-    <button id="selectMode" onclick="onSelectModeClick()" title="Select Mode">
+
+    <button id="eraserMode" onclick="onEraseModeClick()" title="Eraser (E)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="icon icon-tabler icons-tabler-outline icon-tabler-eraser">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3" />
+        <path d="M18 13.3l-6.3 -6.3" />
+      </svg>
+    </button>
+
+    <button id="selectMode" onclick="onSelectModeClick()" title="Select (M)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-marquee">
@@ -80,7 +82,7 @@
       </svg>
     </button>
     <hr />
-    <button id="rectangleButton" onclick="onShapeModeClick('rectangle')" title="Draw Rectangle">
+    <button id="rectangleButton" onclick="onShapeModeClick('rectangle')" title="Rectangle (R)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-square">
@@ -88,7 +90,7 @@
         <rect x="4" y="4" width="16" height="16" rx="2" />
       </svg>
     </button>
-    <button id="circleButton" onclick="onShapeModeClick('circle')" title="Draw Circle">
+    <button id="circleButton" onclick="onShapeModeClick('circle')" title="Circle (C)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-circle">
@@ -96,7 +98,7 @@
         <circle cx="12" cy="12" r="9" />
       </svg>
     </button>
-    <button id="arrowButton" onclick="onShapeModeClick('arrow')" title="Draw Arrow">
+    <button id="arrowButton" onclick="onShapeModeClick('arrow')" title="Arrow (A)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-right">
@@ -106,7 +108,7 @@
         <line x1="13" y1="6" x2="19" y2="12" />
       </svg>
     </button>
-    <button id="triangleButton" onclick="onShapeModeClick('triangle')" title="Draw Triangle">
+    <button id="triangleButton" onclick="onShapeModeClick('triangle')" title="Triangle (T)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-triangle">
@@ -134,7 +136,7 @@
       </svg>
     </button>
     <hr />
-    <button id="clearCanvas" onclick="onClearCanvasClick()" title="Clear Canvas">
+    <button id="clearCanvas" onclick="onClearCanvasClick()" title="Clear Canvas (D)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-trash-x">
@@ -145,7 +147,7 @@
         <path d="M10 12l4 4m0 -4l-4 4" />
       </svg>
     </button>
-    <button id="downloadCanvas" onclick="onDownloadCanvasClick()" title="Download Canvas">
+    <button id="downloadCanvas" onclick="onDownloadCanvasClick()" title="Download Canvas (Ctrl+S)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         class="icon icon-tabler icons-tabler-outline icon-tabler-download">
