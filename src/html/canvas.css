@@ -20,11 +20,13 @@ canvas {
     top: 10px;
     left: 10px;
     background: var(--tertiary-color);
-    padding: 10px;
+    padding: 8px;
     border-radius: 5px;
     display: flex;
-    gap: 10px;
-    flex-direction: column;
+    gap: 4px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 92px;
 }
 
 .toolbar button {
