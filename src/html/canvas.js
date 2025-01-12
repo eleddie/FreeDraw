@@ -381,6 +381,8 @@ function onEraseModeClick() {
   sizeSlider.value = "10";
   context.lineWidth = currentState.penSize;
   selectionRectangle.style.display = "none"; // Hide the selection box
+  canvas.classList.add("draw-cursor");
+  circleCursor.style.display = "block"; // Show the drawing cursor
   setActiveButton("eraserMode");
 }
 
