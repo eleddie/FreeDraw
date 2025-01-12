@@ -18,6 +18,7 @@ const shapeButtons = {
   rectangle: document.getElementById("rectangleButton"),
   circle: document.getElementById("circleButton"),
   arrow: document.getElementById("arrowButton"),
+  triangle: document.getElementById("triangleButton"),
 };
 
 const State = {
@@ -31,6 +32,7 @@ const Shapes = {
   RECTANGLE: "rectangle",
   CIRCLE: "circle",
   ARROW: "arrow",
+  TRIANGLE: "triangle",
 };
 
 let currentState = {
@@ -120,6 +122,7 @@ function onMouseDownCanvas(e) {
     case Shapes.RECTANGLE:
     case Shapes.CIRCLE:
     case Shapes.ARROW:
+    case Shapes.TRIANGLE:
       saveState();
       currentState.drawing = true;
       currentState.startX = e.clientX;
@@ -193,6 +196,7 @@ function onMouseMoveCanvas(e) {
     case Shapes.RECTANGLE:
     case Shapes.CIRCLE:
     case Shapes.ARROW:
+    case Shapes.TRIANGLE:
       const { clientX, clientY } = e;
       updateCursor(e);
       if (currentState.drawing) {
@@ -214,7 +218,8 @@ function onMouseMoveCanvas(e) {
           if (
             currentState.mode === Shapes.RECTANGLE ||
             currentState.mode === Shapes.CIRCLE ||
-            currentState.mode === Shapes.ARROW
+            currentState.mode === Shapes.ARROW ||
+            currentState.mode === Shapes.TRIANGLE
           ) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.putImageData(currentState.tempCanvasContent, 0, 0);
@@ -296,6 +301,7 @@ function onMouseUpCanvas(e) {
     case Shapes.RECTANGLE:
     case Shapes.CIRCLE:
     case Shapes.ARROW:
+    case Shapes.TRIANGLE:
       currentState.drawing = false;
       context.beginPath();
       if (e.altKey) {
@@ -734,6 +740,21 @@ function drawShape(shape, startX, startY, endX, endY, shiftKey) {
         endX - headlen * Math.cos(angle + Math.PI / 6),
         endY - headlen * Math.sin(angle + Math.PI / 6)
       );
+      break;
+    case Shapes.TRIANGLE:
+      if (shiftKey) {
+        const sideLength = Math.abs(endX - startX);
+        const height = (Math.sqrt(3) / 2) * sideLength;
+        context.moveTo(startX, startY);
+        context.lineTo(startX + sideLength, startY);
+        context.lineTo(startX + sideLength / 2, startY - height);
+        context.closePath();
+      } else {
+        context.moveTo(startX, startY);
+        context.lineTo(endX, endY);
+        context.lineTo(startX - (endX - startX), endY);
+        context.closePath();
+      }
       break;
   }
   context.stroke();
