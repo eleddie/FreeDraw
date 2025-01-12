@@ -57,7 +57,5 @@ context.lineWidth = currentState.penSize;
 context.lineCap = "round";
 context.lineJoin = "round";
 
-onDrawModeClick();
-
 let undoStack = [];
 let redoStack = [];
