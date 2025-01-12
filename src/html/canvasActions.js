@@ -1,4 +1,5 @@
 document.onload = onDrawModeClick();
+document.addEventListener("keydown", handleKeyDown);
 
 function onDrawModeClick() {
   currentState = {
