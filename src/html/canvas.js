@@ -219,14 +219,24 @@ function onMouseMoveCanvas(e) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.putImageData(currentState.tempCanvasContent, 0, 0);
 
-            currentState.endX = clientX;
-            currentState.endY = clientY;
+            if (e.altKey) {
+              const dx = clientX - currentState.endX;
+              const dy = clientY - currentState.endY;
+              currentState.startX += dx;
+              currentState.startY += dy;
+              currentState.endX = clientX;
+              currentState.endY = clientY;
+            } else {
+              currentState.endX = clientX;
+              currentState.endY = clientY;
+            }
+
             drawShape(
               currentState.mode,
               currentState.startX,
               currentState.startY,
-              clientX,
-              clientY,
+              currentState.endX,
+              currentState.endY,
               e.shiftKey
             );
           } else {
@@ -288,6 +298,10 @@ function onMouseUpCanvas(e) {
     case Shapes.ARROW:
       currentState.drawing = false;
       context.beginPath();
+      if (e.altKey) {
+        currentState.startX = currentState.endX;
+        currentState.startY = currentState.endY;
+      }
       break;
     case State.SELECT:
       if (currentState.makingSelection) {
