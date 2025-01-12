@@ -18,7 +18,15 @@ function getWebviewContent(
       )
       .toString();
 
-  const replacements = ["./canvas.css", "./utils.js", "./canvas.js"];
+  const replacements = [
+    "./canvas.css",
+    "./utils.js",
+    "./canvas.js",
+    "./undoRedo.js",
+    "./canvasEvents.js",
+    "./canvasActions.js",
+    "./selection.js",
+  ];
 
   for (const replacement of replacements) {
     html = html.replace(replacement, webviewUri(replacement));
