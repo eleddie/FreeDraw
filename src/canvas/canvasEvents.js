@@ -46,26 +46,7 @@ function onMouseDownCanvas(e) {
         currentState.movingSelection = true;
         currentState.selectionStart = { x: e.clientX, y: e.clientY };
         // Save the selected area to move it around and remove it from the canvas temporarily
-        const width = parseInt(selectionRectangle.style.width);
-        const height = parseInt(selectionRectangle.style.height);
-        const left = parseInt(selectionRectangle.style.left);
-        const top = parseInt(selectionRectangle.style.top);
-        currentState.selectedImageData = context.getImageData(
-          left,
-          top,
-          width,
-          height
-        );
-        context.clearRect(left, top, width, height);
-
-        currentState.tempCanvasContent = context.getImageData(
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-        context.putImageData(currentState.tempCanvasContent, 0, 0); // Restore the temporary canvas content immediately
-        context.putImageData(currentState.selectedImageData, left, top);
+        saveSelectedAreaState();
       }
       break;
     case State.MOVE:
@@ -242,6 +223,8 @@ function onMouseUpCanvas(e) {
           selectionRectangle.style.display = "none";
           currentState.selectionStart = null;
           currentState.selectionEnd = null;
+        } else {
+          saveSelectedAreaState();
         }
       }
     },
@@ -282,4 +265,27 @@ function onTouchEndCanvas(e) {
 function onTouchCancelCanvas(e) {
   e.preventDefault();
   onMouseLeaveCanvas();
+}
+
+function saveSelectedAreaState() {
+  const width = parseInt(selectionRectangle.style.width);
+  const height = parseInt(selectionRectangle.style.height);
+  const left = parseInt(selectionRectangle.style.left);
+  const top = parseInt(selectionRectangle.style.top);
+  currentState.selectedImageData = context.getImageData(
+    left,
+    top,
+    width,
+    height
+  );
+  context.clearRect(left, top, width, height);
+
+  currentState.tempCanvasContent = context.getImageData(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+  context.putImageData(currentState.tempCanvasContent, 0, 0); // Restore the temporary canvas content immediately
+  context.putImageData(currentState.selectedImageData, left, top);
 }

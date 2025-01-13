@@ -188,10 +188,72 @@ function handleKeyDown(e) {
       e.preventDefault();
       deleteSelectedArea();
     },
+    ArrowUp: (e) => {
+      e.preventDefault();
+      moveSelection(0, e.shiftKey ? -10 : -1);
+    },
+    ArrowDown: (e) => {
+      e.preventDefault();
+      moveSelection(0, e.shiftKey ? 10 : 1);
+    },
+    ArrowLeft: (e) => {
+      e.preventDefault();
+      moveSelection(e.shiftKey ? -10 : -1, 0);
+    },
+    ArrowRight: (e) => {
+      e.preventDefault();
+      moveSelection(e.shiftKey ? 10 : 1, 0);
+    },
   };
 
   if (actions[e.key]) {
     actions[e.key](e);
+  }
+}
+
+function moveSelection(dx, dy) {
+  if (currentState.selectionStart && currentState.selectionEnd) {
+    const width = parseInt(selectionRectangle.style.width);
+    const height = parseInt(selectionRectangle.style.height);
+    const left = parseInt(selectionRectangle.style.left);
+    const top = parseInt(selectionRectangle.style.top);
+
+    // Restore the temporary canvas content
+    context.putImageData(currentState.tempCanvasContent, 0, 0);
+
+    // Create a new canvas to filter out empty pixels
+    const tempCanvas = document.createElement("canvas");
+    const tempContext = tempCanvas.getContext("2d");
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    tempContext.putImageData(currentState.selectedImageData, 0, 0);
+
+    // Get the image data and filter out empty pixels
+    const imageData = tempContext.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] === 0) {
+        // Check if the pixel is transparent
+        data[i] = 0;
+        data[i + 1] = 0;
+        data[i + 2] = 0;
+        data[i + 3] = 0;
+      }
+    }
+    tempContext.putImageData(imageData, 0, 0);
+
+    // Move the selection rectangle
+    selectionRectangle.style.left = `${left + dx}px`;
+    selectionRectangle.style.top = `${top + dy}px`;
+
+    // Redraw the selected area at the new position
+    context.drawImage(tempCanvas, left + dx, top + dy);
+
+    // Update the selection start and end positions
+    currentState.selectionStart.x += dx;
+    currentState.selectionStart.y += dy;
+    currentState.selectionEnd.x += dx;
+    currentState.selectionEnd.y += dy;
   }
 }
 
