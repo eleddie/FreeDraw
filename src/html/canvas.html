@@ -13,6 +13,7 @@
       --secondary-color: #222222;
       --tertiary-color: #333333;
       --quaternary-color: #444444;
+      --icon-size: 44px;
     }
 
     @media (prefers-color-scheme: light) {
@@ -24,8 +25,8 @@
       }
     }
   </style>
-  <script defer src="./utils.js"></script>
   <script defer src="./canvas.js"></script>
+  <script defer src="./utils.js"></script>
   <script defer src="./undoRedo.js"></script>
   <script defer src="./canvasEvents.js"></script>
   <script defer src="./canvasActions.js"></script>
@@ -39,126 +40,135 @@
     ontouchmove="onTouchMoveCanvas(event)" ontouchend="onTouchEndCanvas(event)"
     ontouchcancel="onTouchCancelCanvas(event)"></canvas>
   <div class="toolbar" onmouseenter="onToolbarMouseEnter()" onmouseleave="onToolbarMouseLeave()">
-    <button id="drawMode" onclick="onDrawModeClick()" title="Brush (B)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-pencil">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-        <path d="M13.5 6.5l4 4" />
-      </svg>
-      <div id="selectedColorIndicator" class="color-indicator"></div>
-    </button>
+    <div class="toolbar-section">
 
-    <button id="colorPickerButton" title="Pick Color (P)" onclick="onChangeColor()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-palette">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path
-          d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25" />
-        <path d="M8.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-        <path d="M12.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-        <path d="M16.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-      </svg>
-      <input type="color" id="colorPicker" class="color-picker" oninput="onColorSelected(event)" />
-    </button>
+      <button id="drawMode" onclick="onDrawModeClick()" title="Brush (B)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-pencil">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+          <path d="M13.5 6.5l4 4" />
+        </svg>
+        <div id="selectedColorIndicator" class="color-indicator"></div>
+      </button>
 
-    <button id="eraserMode" onclick="onEraseModeClick()" title="Eraser (E)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-eraser">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3" />
-        <path d="M18 13.3l-6.3 -6.3" />
-      </svg>
-    </button>
+      <button id="colorPickerButton" title="Pick Color (P)" onclick="onChangeColor()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-palette">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path
+            d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25" />
+          <path d="M8.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+          <path d="M12.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+          <path d="M16.5 10.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+        </svg>
+        <input type="color" id="colorPicker" class="color-picker" oninput="onColorSelected(event)" />
+      </button>
 
-    <button id="selectMode" onclick="onSelectModeClick()" title="Select (M)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-marquee">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path
-          d="M4 6a2 2 0 0 1 2 -2m3 0h1.5m3 0h1.5m3 0a2 2 0 0 1 2 2m0 3v1.5m0 3v1.5m0 3a2 2 0 0 1 -2 2m-3 0h-1.5m-3 0h-1.5m-3 0a2 2 0 0 1 -2 -2m0 -3v-1.5m0 -3v-1.5m0 -3" />
-      </svg>
-    </button>
-    <hr />
-    <button id="rectangleButton" onclick="onShapeModeClick('rectangle')" title="Rectangle (R)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-square">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <rect x="4" y="4" width="16" height="16" rx="2" />
-      </svg>
-    </button>
-    <button id="circleButton" onclick="onShapeModeClick('circle')" title="Circle (C)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-circle">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <circle cx="12" cy="12" r="9" />
-      </svg>
-    </button>
-    <button id="arrowButton" onclick="onShapeModeClick('arrow')" title="Arrow (A)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-right">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-        <line x1="13" y1="18" x2="19" y2="12" />
-        <line x1="13" y1="6" x2="19" y2="12" />
-      </svg>
-    </button>
-    <button id="triangleButton" onclick="onShapeModeClick('triangle')" title="Triangle (T)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-triangle">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M12 3l9 18h-18z" />
-      </svg>
-    </button>
-    <hr />
-    <button id="undoButton" onclick="onUndo()" title="Undo (Ctrl+Z)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-back-up">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M9 14l-4 -4l4 -4" />
-        <path d="M5 10h11a4 4 0 1 1 0 8h-1" />
-      </svg>
-    </button>
-    <button id="redoButton" onclick="onRedo()" title="Redo (Ctrl+Shift+Z)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-forward-up">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M15 14l4 -4l-4 -4" />
-        <path d="M19 10h-11a4 4 0 1 0 0 8h1" />
-      </svg>
-    </button>
-    <hr />
-    <button id="clearCanvas" onclick="onClearCanvasClick()" title="Clear Canvas (D)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-trash-x">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M4 7h16" />
-        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-        <path d="M10 12l4 4m0 -4l-4 4" />
-      </svg>
-    </button>
-    <button id="downloadCanvas" onclick="onDownloadCanvasClick()" title="Download Canvas (Ctrl+S)">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-        class="icon icon-tabler icons-tabler-outline icon-tabler-download">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-        <path d="M7 11l5 5l5 -5" />
-        <path d="M12 4l0 12" />
-      </svg>
-    </button>
+      <button id="eraserMode" onclick="onEraseModeClick()" title="Eraser (E)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-eraser">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M19 20h-10.5l-4.21 -4.3a1 1 0 0 1 0 -1.41l10 -10a1 1 0 0 1 1.41 0l5 5a1 1 0 0 1 0 1.41l-9.2 9.3" />
+          <path d="M18 13.3l-6.3 -6.3" />
+        </svg>
+      </button>
+
+      <button id="selectMode" onclick="onSelectModeClick()" title="Select (M)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-marquee">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path
+            d="M4 6a2 2 0 0 1 2 -2m3 0h1.5m3 0h1.5m3 0a2 2 0 0 1 2 2m0 3v1.5m0 3v1.5m0 3a2 2 0 0 1 -2 2m-3 0h-1.5m-3 0h-1.5m-3 0a2 2 0 0 1 -2 -2m0 -3v-1.5m0 -3v-1.5m0 -3" />
+        </svg>
+      </button>
+    </div>
+    <div class="separator"></div>
+    <div class="toolbar-section">
+      <button id="rectangleButton" onclick="onShapeModeClick('rectangle')" title="Rectangle (R)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-square">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+        </svg>
+      </button>
+      <button id="circleButton" onclick="onShapeModeClick('circle')" title="Circle (C)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-circle">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <circle cx="12" cy="12" r="9" />
+        </svg>
+      </button>
+      <button id="arrowButton" onclick="onShapeModeClick('arrow')" title="Arrow (A)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-right">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <line x1="13" y1="18" x2="19" y2="12" />
+          <line x1="13" y1="6" x2="19" y2="12" />
+        </svg>
+      </button>
+      <button id="triangleButton" onclick="onShapeModeClick('triangle')" title="Triangle (T)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-triangle">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 3l9 18h-18z" />
+        </svg>
+      </button>
+    </div>
+    <div class="separator"></div>
+    <div class="toolbar-section toolbar-section-small">
+      <button id="undoButton" onclick="onUndo()" title="Undo (Ctrl+Z)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-back-up">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M9 14l-4 -4l4 -4" />
+          <path d="M5 10h11a4 4 0 1 1 0 8h-1" />
+        </svg>
+      </button>
+      <button id="redoButton" onclick="onRedo()" title="Redo (Ctrl+Shift+Z)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-arrow-forward-up">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M15 14l4 -4l-4 -4" />
+          <path d="M19 10h-11a4 4 0 1 0 0 8h1" />
+        </svg>
+      </button>
+    </div>
+    <div class="separator"></div>
+    <div class="toolbar-section toolbar-section-small">
+      <button id="clearCanvas" onclick="onClearCanvasClick()" title="Clear Canvas (D)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-trash-x">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M4 7h16" />
+          <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+          <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+          <path d="M10 12l4 4m0 -4l-4 4" />
+        </svg>
+      </button>
+      <button id="downloadCanvas" onclick="onDownloadCanvasClick()" title="Download Canvas (Ctrl+S)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="icon icon-tabler icons-tabler-outline icon-tabler-download">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+          <path d="M7 11l5 5l5 -5" />
+          <path d="M12 4l0 12" />
+        </svg>
+      </button>
+    </div>
 
   </div>
   <div class="size-slider" id="sizeSliderContainer">

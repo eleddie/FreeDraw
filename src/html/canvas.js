@@ -1,25 +1,5 @@
 const root = document.documentElement;
 const getColor = (color) => getComputedStyle(root).getPropertyValue(color);
-const primaryColor = getColor("--primary-color");
-const backgroundColor = getColor("--secondary-color");
-const dotsColor = getColor("--tertiary-color");
-
-const sizeSliderContainer = document.getElementById("sizeSliderContainer");
-const circleCursor = document.getElementById("circleCursor");
-const outerCircle = document.getElementById("outerCircle");
-const innerCircle = document.getElementById("innerCircle");
-const sizeSlider = document.getElementById("sizeSlider");
-const canvas = document.getElementById("drawCanvas");
-const context = canvas.getContext("2d", { willReadFrequently: true });
-const colorPicker = document.getElementById("colorPicker");
-const selectionRectangle = document.getElementById("selectionRectangle");
-
-const shapeButtons = {
-  rectangle: document.getElementById("rectangleButton"),
-  circle: document.getElementById("circleButton"),
-  arrow: document.getElementById("arrowButton"),
-  triangle: document.getElementById("triangleButton"),
-};
 
 const State = {
   DRAW: "DRAW",
@@ -35,27 +15,64 @@ const Shapes = {
   TRIANGLE: "triangle",
 };
 
-let currentState = {
-  mode: State.DRAW,
-  color: primaryColor,
-  penSize: 2,
-  eraser: false,
-  drawing: false,
-  makingSelection: false,
-  movingSelection: false,
-  selectionStart: null,
-  selectionEnd: null,
-  selectedImageData: null,
+let primaryColor;
+let backgroundColor;
+let sizeSliderContainer;
+let circleCursor;
+let outerCircle;
+let innerCircle;
+let sizeSlider;
+let canvas;
+let context;
+let colorPicker;
+let selectionRectangle;
+let shapeButtons;
+let currentState;
+let undoStack;
+let redoStack;
+
+window.onload = () => {
+  primaryColor = getColor("--primary-color");
+  backgroundColor = getColor("--secondary-color");
+  sizeSliderContainer = document.getElementById("sizeSliderContainer");
+  circleCursor = document.getElementById("circleCursor");
+  outerCircle = document.getElementById("outerCircle");
+  innerCircle = document.getElementById("innerCircle");
+  sizeSlider = document.getElementById("sizeSlider");
+  canvas = document.getElementById("drawCanvas");
+  context = canvas.getContext("2d", { willReadFrequently: true });
+  colorPicker = document.getElementById("colorPicker");
+  selectionRectangle = document.getElementById("selectionRectangle");
+
+  shapeButtons = {
+    rectangle: document.getElementById("rectangleButton"),
+    circle: document.getElementById("circleButton"),
+    arrow: document.getElementById("arrowButton"),
+    triangle: document.getElementById("triangleButton"),
+  };
+
+  currentState = {
+    mode: State.DRAW,
+    color: primaryColor,
+    penSize: 2,
+    eraser: false,
+    drawing: false,
+    makingSelection: false,
+    movingSelection: false,
+    selectionStart: null,
+    selectionEnd: null,
+    selectedImageData: null,
+  };
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Remove background fill from canvas
+  context.strokeStyle = currentState.color;
+  context.lineWidth = currentState.penSize;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+
+  undoStack = [];
+  redoStack = [];
 };
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// Remove background fill from canvas
-context.strokeStyle = currentState.color;
-context.lineWidth = currentState.penSize;
-context.lineCap = "round";
-context.lineJoin = "round";
-
-let undoStack = [];
-let redoStack = [];

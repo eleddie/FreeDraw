@@ -19,7 +19,10 @@ function getWebviewContent(
       .toString();
 
   const replacements = [
+    // Styles
     "./canvas.css",
+
+    //Scripts
     "./utils.js",
     "./canvas.js",
     "./undoRedo.js",
