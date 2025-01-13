@@ -272,3 +272,25 @@ function onMouseLeaveCanvas() {
   currentState.drawing = false;
   context.beginPath();
 }
+
+function onTouchStartCanvas(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  onMouseDownCanvas({ clientX: touch.clientX, clientY: touch.clientY });
+}
+
+function onTouchMoveCanvas(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  onMouseMoveCanvas({ clientX: touch.clientX, clientY: touch.clientY });
+}
+
+function onTouchEndCanvas(e) {
+  e.preventDefault();
+  onMouseUpCanvas(e.changedTouches[0]);
+}
+
+function onTouchCancelCanvas(e) {
+  e.preventDefault();
+  onMouseLeaveCanvas();
+}

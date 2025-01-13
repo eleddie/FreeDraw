@@ -35,7 +35,9 @@
 <body onresize="onResize()" onclick="onBodyClick(event)">
   <canvas class="draw-cursor" id="drawCanvas" oncontextmenu="onRightClick(event)" onmouseup="onMouseUpCanvas(event)"
     onmouseleave="onMouseLeaveCanvas(event)" onmousemove="onMouseMoveCanvas(event)"
-    onmousedown="onMouseDownCanvas(event)"></canvas>
+    onmousedown="onMouseDownCanvas(event)" ontouchstart="onTouchStartCanvas(event)"
+    ontouchmove="onTouchMoveCanvas(event)" ontouchend="onTouchEndCanvas(event)"
+    ontouchcancel="onTouchCancelCanvas(event)"></canvas>
   <div class="toolbar" onmouseenter="onToolbarMouseEnter()" onmouseleave="onToolbarMouseLeave()">
     <button id="drawMode" onclick="onDrawModeClick()" title="Brush (B)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
