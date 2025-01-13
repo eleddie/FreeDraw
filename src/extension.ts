@@ -7,20 +7,20 @@ function getWebviewContent(
   panel: vscode.WebviewPanel
 ) {
   const filePath: vscode.Uri = vscode.Uri.file(
-    path.join(context.extensionPath, "src", "html", "canvas.html")
+    path.join(context.extensionPath, "src", "canvas", "index.html")
   );
   let html = fs.readFileSync(filePath.fsPath, "utf8");
 
   const webviewUri = (file: string) =>
     panel.webview
       .asWebviewUri(
-        vscode.Uri.file(path.join(context.extensionPath, "src", "html", file))
+        vscode.Uri.file(path.join(context.extensionPath, "src", "canvas", file))
       )
       .toString();
 
   const replacements = [
     // Styles
-    "./canvas.css",
+    "./styles.css",
 
     //Scripts
     "./utils.js",
