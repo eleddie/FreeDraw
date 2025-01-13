@@ -111,12 +111,37 @@ function onEndSelection(e) {
     selectionRectangle.style.top = `${top}px`;
     selectionRectangle.style.width = `${Math.abs(width)}px`;
     selectionRectangle.style.height = `${Math.abs(height)}px`;
-
-    saveState(); // Save the state after ending the selection
   }
 }
 
 function isInsideSelection(x, y) {
   const rect = selectionRectangle.getBoundingClientRect();
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+}
+
+function deleteSelectedArea() {
+  if (currentState.selectionStart && currentState.selectionEnd) {
+    saveState();
+
+    const left = Math.min(
+      currentState.selectionStart.x,
+      currentState.selectionEnd.x
+    );
+    const top = Math.min(
+      currentState.selectionStart.y,
+      currentState.selectionEnd.y
+    );
+    const width = Math.abs(
+      currentState.selectionEnd.x - currentState.selectionStart.x
+    );
+    const height = Math.abs(
+      currentState.selectionEnd.y - currentState.selectionStart.y
+    );
+
+    context.clearRect(left, top, width, height);
+    selectionRectangle.style.display = "none";
+    currentState.selectionStart = null;
+    currentState.selectionEnd = null;
+    currentState.selectedImageData = null;
+  }
 }

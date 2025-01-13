@@ -184,6 +184,10 @@ function handleKeyDown(e) {
       e.preventDefault();
       onTextModeClick();
     },
+    Backspace: (e) => {
+      e.preventDefault();
+      deleteSelectedArea();
+    },
   };
 
   if (actions[e.key]) {
