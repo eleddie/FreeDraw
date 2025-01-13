@@ -6,13 +6,13 @@ const State = {
   ERASE: "ERASE",
   SELECT: "SELECT",
   MOVE: "MOVE",
+  TEXT: "TEXT",
 };
 
 const Shapes = {
   RECTANGLE: "rectangle",
   CIRCLE: "circle",
   ARROW: "arrow",
-  TRIANGLE: "triangle",
 };
 
 let primaryColor;
@@ -31,7 +31,7 @@ let currentState;
 let undoStack;
 let redoStack;
 
-window.onload = () => {
+document.addEventListener("DOMContentLoaded", () => {
   primaryColor = getColor("--primary-color");
   backgroundColor = getColor("--secondary-color");
   sizeSliderContainer = document.getElementById("sizeSliderContainer");
@@ -48,7 +48,6 @@ window.onload = () => {
     rectangle: document.getElementById("rectangleButton"),
     circle: document.getElementById("circleButton"),
     arrow: document.getElementById("arrowButton"),
-    triangle: document.getElementById("triangleButton"),
   };
 
   currentState = {
@@ -62,6 +61,7 @@ window.onload = () => {
     selectionStart: null,
     selectionEnd: null,
     selectedImageData: null,
+    enteringText: false,
   };
 
   canvas.width = window.innerWidth;
@@ -75,4 +75,4 @@ window.onload = () => {
 
   undoStack = [];
   redoStack = [];
-};
+});

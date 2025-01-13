@@ -212,7 +212,7 @@ dialog form p {
 dialog form .button-container {
     display: flex;
     gap: 10px;
-    /* Add space between buttons */
+    padding-top: 10px;
 }
 
 dialog form button {
@@ -253,4 +253,17 @@ dialog form button:hover {
 /* Prevent pinch-to-zoom */
 body {
     touch-action: pan-x pan-y;
+}
+
+.text-cursor {
+    cursor: text;
+}
+
+.text-input {
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border: 2px solid var(--primary-color);
+    border-radius: 5px;
+    outline: none;
+    color: var(--primary-color);
 }

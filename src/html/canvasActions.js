@@ -1,4 +1,7 @@
-document.onload = onDrawModeClick();
+document.addEventListener("DOMContentLoaded", () => {
+  onDrawModeClick();
+});
+
 document.addEventListener("keydown", handleKeyDown);
 
 function onDrawModeClick() {
@@ -15,6 +18,7 @@ function onDrawModeClick() {
     selectedImageData: null,
   };
   canvas.classList.remove("canvas-selection");
+  canvas.classList.remove("text-cursor");
   canvas.classList.add("draw-cursor");
   circleCursor.style.display = "block"; // Show the drawing cursor
   selectionRectangle.style.display = "none"; // Hide the selection box
@@ -46,6 +50,7 @@ function onEraseModeClick() {
   context.lineWidth = currentState.penSize;
   selectionRectangle.style.display = "none"; // Hide the selection box
   canvas.classList.add("draw-cursor");
+  canvas.classList.remove("text-cursor");
   circleCursor.style.display = "block"; // Show the drawing cursor
   setActiveButton("eraserMode");
 }
@@ -122,6 +127,10 @@ function saveCanvas() {
 }
 
 function handleKeyDown(e) {
+  if (currentState.enteringText) {
+    return;
+  }
+
   const actions = {
     z: (e) => {
       if (e.ctrlKey || e.metaKey) {
@@ -173,7 +182,7 @@ function handleKeyDown(e) {
     },
     t: (e) => {
       e.preventDefault();
-      onShapeModeClick(Shapes.TRIANGLE);
+      onTextModeClick();
     },
   };
 
@@ -199,6 +208,7 @@ function onSelectModeClick() {
   currentState.mode = State.SELECT;
   canvas.classList.add("canvas-selection");
   canvas.classList.remove("draw-cursor");
+  canvas.classList.remove("text-cursor");
   circleCursor.style.display = "none"; // Hide the drawing cursor
   setActiveButton("selectMode");
 }
@@ -220,7 +230,7 @@ function onShapeModeClick(shape) {
   canvas.classList.remove("canvas-selection");
   canvas.classList.add("canvas-selection");
   canvas.classList.remove("draw-cursor");
-
+  canvas.classList.remove("text-cursor");
   circleCursor.style.display = "none"; // Show the drawing cursor
   selectionRectangle.style.display = "none"; // Hide the selection box
   context.strokeStyle = currentState.color;
@@ -289,36 +299,67 @@ function drawShape(shape, startX, startY, endX, endY, shiftKey) {
         endY - headlen * Math.sin(angle + Math.PI / 6)
       );
       break;
-    case Shapes.TRIANGLE:
-      if (shiftKey) {
-        const sideLength = Math.abs(endX - startX);
-        const height = (Math.sqrt(3) / 2) * sideLength;
-        context.moveTo(startX, startY);
-        context.lineTo(startX + sideLength, startY);
-        context.lineTo(startX + sideLength / 2, startY - height);
-        context.closePath();
-      } else {
-        context.moveTo(startX, startY);
-        context.lineTo(endX, endY);
-        context.lineTo(startX - (endX - startX), endY);
-        context.closePath();
-      }
-      break;
   }
   context.stroke();
 }
 
-let wasCircleCursorVisible = false;
-function onToolbarMouseEnter() {
-  // if circleCursor is visible, hide it
-  if (circleCursor.style.display === "block") {
-    wasCircleCursorVisible = true;
-    circleCursor.style.display = "none";
+function onTextModeClick() {
+  currentState = {
+    mode: State.TEXT,
+    color: currentState.color,
+    penSize: currentState.penSize,
+    eraser: false,
+    drawing: false,
+    makingSelection: false,
+    movingSelection: false,
+    selectionStart: null,
+    selectionEnd: null,
+    selectedImageData: null,
+  };
+  canvas.classList.remove("canvas-selection");
+  canvas.classList.add("text-cursor");
+  circleCursor.style.display = "none"; // Hide the drawing cursor
+  selectionRectangle.style.display = "none"; // Hide the selection box
+  context.strokeStyle = currentState.color;
+  context.lineWidth = currentState.penSize;
+  setActiveButton("textButton");
+}
+
+function onCanvasClick(e) {
+  if (currentState.mode === State.TEXT) {
+    const dialog = document.getElementById("textInputDialog");
+    const textInput = document.getElementById("textInput");
+
+    dialog.showModal();
+    currentState.enteringText = true;
+
+    dialog.addEventListener(
+      "close",
+      () => {
+        if (dialog.returnValue === "confirm" && textInput.value) {
+          context.fillStyle = currentState.color;
+          context.font = `${currentState.penSize * 10}px Arial`;
+          context.fillText(textInput.value, e.clientX, e.clientY);
+          saveState();
+        }
+        textInput.value = "";
+
+        currentState.enteringText = false;
+      },
+      { once: true }
+    );
   }
 }
 
+let wasCircleCursorVisible = true;
+function onToolbarMouseEnter() {
+  if (![State.TEXT, State.SELECT].includes(currentState.mode)) {
+    wasCircleCursorVisible = false;
+  }
+  circleCursor.style.display = "none";
+}
+
 function onToolbarMouseLeave() {
-  // if circleCursor was visible, show it
   if (wasCircleCursorVisible) {
     circleCursor.style.display = "block";
   }

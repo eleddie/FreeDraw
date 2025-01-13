@@ -15,7 +15,6 @@ function onMouseDownCanvas(e) {
     case Shapes.RECTANGLE:
     case Shapes.CIRCLE:
     case Shapes.ARROW:
-    case Shapes.TRIANGLE:
       saveState();
       currentState.drawing = true;
       currentState.startX = e.clientX;
@@ -89,7 +88,6 @@ function onMouseMoveCanvas(e) {
     case Shapes.RECTANGLE:
     case Shapes.CIRCLE:
     case Shapes.ARROW:
-    case Shapes.TRIANGLE:
       const { clientX, clientY } = e;
       updateCursor(e);
       if (currentState.drawing) {
@@ -111,8 +109,7 @@ function onMouseMoveCanvas(e) {
           if (
             currentState.mode === Shapes.RECTANGLE ||
             currentState.mode === Shapes.CIRCLE ||
-            currentState.mode === Shapes.ARROW ||
-            currentState.mode === Shapes.TRIANGLE
+            currentState.mode === Shapes.ARROW
           ) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.putImageData(currentState.tempCanvasContent, 0, 0);
@@ -222,14 +219,6 @@ function onMouseUpCanvas(e) {
       }
     },
     [Shapes.ARROW]: () => {
-      currentState.drawing = false;
-      context.beginPath();
-      if (e.altKey) {
-        currentState.startX = currentState.endX;
-        currentState.startY = currentState.endY;
-      }
-    },
-    [Shapes.TRIANGLE]: () => {
       currentState.drawing = false;
       context.beginPath();
       if (e.altKey) {
