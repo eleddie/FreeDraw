@@ -36,7 +36,7 @@
   <canvas class="draw-cursor" id="drawCanvas" oncontextmenu="onRightClick(event)" onmouseup="onMouseUpCanvas(event)"
     onmouseleave="onMouseLeaveCanvas(event)" onmousemove="onMouseMoveCanvas(event)"
     onmousedown="onMouseDownCanvas(event)"></canvas>
-  <div class="toolbar">
+  <div class="toolbar" onmouseenter="onToolbarMouseEnter()" onmouseleave="onToolbarMouseLeave()">
     <button id="drawMode" onclick="onDrawModeClick()" title="Brush (B)">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"

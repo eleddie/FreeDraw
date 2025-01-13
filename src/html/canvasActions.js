@@ -133,12 +133,6 @@ function handleKeyDown(e) {
         }
       }
     },
-    y: (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
-        onRedo();
-      }
-    },
     b: (e) => {
       e.preventDefault();
       onDrawModeClick();
@@ -224,8 +218,10 @@ function onShapeModeClick(shape) {
     selectedImageData: null,
   };
   canvas.classList.remove("canvas-selection");
-  canvas.classList.add("draw-cursor");
-  circleCursor.style.display = "block"; // Show the drawing cursor
+  canvas.classList.add("canvas-selection");
+  canvas.classList.remove("draw-cursor");
+
+  circleCursor.style.display = "none"; // Show the drawing cursor
   selectionRectangle.style.display = "none"; // Hide the selection box
   context.strokeStyle = currentState.color;
   context.lineWidth = currentState.penSize;
@@ -310,4 +306,20 @@ function drawShape(shape, startX, startY, endX, endY, shiftKey) {
       break;
   }
   context.stroke();
+}
+
+let wasCircleCursorVisible = false;
+function onToolbarMouseEnter() {
+  // if circleCursor is visible, hide it
+  if (circleCursor.style.display === "block") {
+    wasCircleCursorVisible = true;
+    circleCursor.style.display = "none";
+  }
+}
+
+function onToolbarMouseLeave() {
+  // if circleCursor was visible, show it
+  if (wasCircleCursorVisible) {
+    circleCursor.style.display = "block";
+  }
 }
