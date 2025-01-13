@@ -243,4 +243,14 @@ dialog form button:hover {
         height: calc(calc(var(--icon-size) * 2) - 4px);
         display: inline-block;
     }
+
+    /* Prevent zoom on double-tap */
+    body {
+        touch-action: manipulation;
+    }
+}
+
+/* Prevent pinch-to-zoom */
+body {
+    touch-action: pan-x pan-y;
 }
