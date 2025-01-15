@@ -419,8 +419,10 @@ function onCanvasClick(e) {
 
 let wasCircleCursorVisible = true;
 function onToolbarMouseEnter() {
-  if (![State.TEXT, State.SELECT].includes(currentState.mode)) {
+  if (![State.DRAW, State.ERASE].includes(currentState.mode)) {
     wasCircleCursorVisible = false;
+  } else {
+    wasCircleCursorVisible = true;
   }
   circleCursor.style.display = "none";
 }
