@@ -135,6 +135,12 @@ function handleKeyDown(e) {
     z: (e) => {
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
+        // clear the selection if it exists
+        if (currentState.selectionStart && currentState.selectionEnd) {
+          currentState.selectionStart = null;
+          currentState.selectionEnd = null;
+          selectionRectangle.style.display = "none";
+        }
         if (e.shiftKey) {
           onRedo();
         } else {

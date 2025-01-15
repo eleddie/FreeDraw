@@ -79,6 +79,7 @@ function onEndSelection(e) {
     currentState.selectionStart &&
     currentState.selectionEnd
   ) {
+    saveState();
     const width = currentState.selectionEnd.x - currentState.selectionStart.x;
     const height = currentState.selectionEnd.y - currentState.selectionStart.y;
 
