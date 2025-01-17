@@ -2,19 +2,33 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 
+const isDev = process.env.NODE_ENV === "development";
+
 function getWebviewContent(
   context: vscode.ExtensionContext,
   panel: vscode.WebviewPanel
 ) {
   const filePath: vscode.Uri = vscode.Uri.file(
-    path.join(context.extensionPath, "src", "canvas", "index.html")
+    path.join(
+      context.extensionPath,
+      isDev ? "src" : "dist",
+      "canvas",
+      "index.html"
+    )
   );
   let html = fs.readFileSync(filePath.fsPath, "utf8");
 
   const webviewUri = (file: string) =>
     panel.webview
       .asWebviewUri(
-        vscode.Uri.file(path.join(context.extensionPath, "src", "canvas", file))
+        vscode.Uri.file(
+          path.join(
+            context.extensionPath,
+            isDev ? "src" : "dist",
+            "canvas",
+            file
+          )
+        )
       )
       .toString();
 
