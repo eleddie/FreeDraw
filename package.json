@@ -1,8 +1,8 @@
 {
   "name": "freedraw",
   "displayName": "Free Draw",
-  "description": "Draw freely in VSCode",
-  "version": "0.0.3",
+  "description": "FreeDraw is a Visual Studio Code extension that allows you to draw freely within the editor. Perfect for sketching ideas, annotating code, and creating diagrams.",
+  "version": "0.0.4",
   "license": "GPL-3.0-only",
   "publisher": "ProjectSyntax",
   "icon": "./icon.png",
