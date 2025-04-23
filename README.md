@@ -28,3 +28,40 @@ We welcome contributions from the community! To contribute:
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Development
+
+To test the extension:
+
+1. Build the source code of the react app inside the `web` folder.
+
+```bash
+cd web
+yarn install
+yarn build
+```
+
+2. Run the Extension Development Host with `F5`.
+
+3. Activate the extension using the command palette (`Ctrl+Shift+P`) and typing `Free Draw`.
+
+4. Draw!
+
+### Web
+
+Given that this is a React app, you can test the extension in the web for quick development.
+
+```bash
+cd web
+yarn install
+yarn dev
+```
+
+## Release
+
+To release a new version of the extension run the following command:
+
+```bash
+vsce package
+vsce publish
+```
