@@ -700,7 +700,7 @@ export const shouldDeleteElement = (element: Element) => {
     case TypesTools.Arrow:
       return Math.sqrt((x2! - x1!) ** 2 + (y2! - y1!) ** 2) < SIZE;
     case TypesTools.Rectangle:
-      return x2! - x1! < SIZE || y2! - y1! < SIZE;
+      return Math.abs(x2! - x1!) * Math.abs(y2! - y1!) < SIZE ** 2;
     case TypesTools.Circle:
       return x2! - x1! < SIZE;
     case TypesTools.Text:
