@@ -512,8 +512,7 @@ const App = () => {
     if (!activeElement) return;
     const { id, x1, y1, type } = activeElement;
     setAction(Action.None);
-    const el = elements.find((e) => e.id === activeElement?.id);
-    if (el && shouldDeleteElement(el)) {
+    if (event.target.value === "") {
       undo();
     } else {
       updateElement(id, x1!, y1!, 0, 0, type, { text: event.target.value });
