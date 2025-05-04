@@ -32,6 +32,7 @@ export type Element = {
   offsetY?: number;
   position?: string | null;
   color?: string;
+  initialCoordinates?: { x1: number; y1: number };
 };
 
 export enum Action {

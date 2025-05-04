@@ -25,7 +25,8 @@ export const createElement = (
   y2: number,
   type: TypesTools,
   color?: string,
-  src?: string
+  src?: string,
+  initialCoordinates?: { x1: number; y1: number }
 ) => {
   switch (type) {
     case TypesTools.Line: {
@@ -73,6 +74,7 @@ export const createElement = (
         type,
         roughElement,
         color,
+        initialCoordinates,
       };
     }
     case TypesTools.Arrow: {
@@ -487,13 +489,6 @@ export const drawElement = (
     let x2 = element.x2! + padding;
     let y2 = element.y2! + padding;
 
-    if (element.type === TypesTools.Text) {
-      // The selection box bounds are slightly off when the type is text
-      // so we need to adjust the coordinates
-      y1 = element.y1! - padding * 2;
-      y2 = element.y2!;
-    }
-
     if (element.type === TypesTools.Pencil) {
       const { minX, minY, maxX, maxY } = getStrokeBounds(element.points!);
       x1 = minX - padding;
@@ -550,15 +545,16 @@ export const drawElement = (
     case TypesTools.Text:
       context.textBaseline = "top";
       context.textAlign = "center";
-      context.font = "24px DeliciousHandrawn-Regular, sans-serif";
+      context.font = "26px DeliciousHandrawn-Regular, sans-serif";
       drawText(context, element.text || "", {
         x: element.x1!,
         y: element.y1!,
         width: element.x2! - element.x1!,
         height: element.y2! - element.y1!,
-        font: "24px DeliciousHandrawn-Regular, sans-serif",
-        lineHeight: 26,
+        font: "26px DeliciousHandrawn-Regular, sans-serif",
+        lineHeight: 28,
         align: "center",
+        vAlign: "bottom",
       });
       break;
     case TypesTools.Image:

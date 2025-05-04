@@ -160,7 +160,9 @@ const App = () => {
           x2,
           y2,
           type,
-          elementsCopy[index].color
+          elementsCopy[index].color,
+          undefined,
+          elementsCopy[index].initialCoordinates
         );
         break;
       case TypesTools.Image:
@@ -196,7 +198,7 @@ const App = () => {
         const canvas = document.getElementById("canvas") as HTMLCanvasElement;
         const context = canvas.getContext("2d")!;
         context.textBaseline = "top";
-        context.font = "24px DeliciousHandrawn-Regular, sans-serif";
+        context.font = "26px DeliciousHandrawn-Regular, sans-serif";
         const lines = options?.text?.split("\n");
         // Find longest line
         let textWidth = 0;
@@ -204,7 +206,7 @@ const App = () => {
         lines?.forEach((line) => {
           const lineWidth = context.measureText(line).width;
           if (lineWidth > textWidth) textWidth = lineWidth;
-          textHeight += 26;
+          textHeight += 28;
         });
         elementsCopy[index] = {
           ...createElement(
@@ -363,11 +365,16 @@ const App = () => {
       const element = createElement(
         id,
         clientX,
-        clientY,
+        clientY - (tool === TypesTools.Text ? 28 / 2 : 0),
         clientX,
-        clientY,
+        clientY - (tool === TypesTools.Text ? 28 / 2 : 0),
         tool,
-        color
+        color,
+        undefined,
+        {
+          x1: clientX,
+          y1: clientY,
+        }
       );
       setElements((prevState) => [...prevState, element]);
       setActiveElement(element);
@@ -408,8 +415,15 @@ const App = () => {
 
     if (action === Action.Drawing) {
       const index = elements.length - 1;
-      const { id, x1, y1 } = elements[index];
-      updateElement(id, x1!, y1!, clientX, clientY, tool);
+      const { id, x1, y1, initialCoordinates } = elements[index];
+      updateElement(
+        id,
+        initialCoordinates?.x1 || x1!,
+        initialCoordinates?.y1 || y1!,
+        clientX,
+        clientY,
+        tool
+      );
     } else if (action === Action.Moving) {
       if (activeElement?.type === TypesTools.Pencil) {
         const newPoints = activeElement.points?.map((_, index) => ({
@@ -542,7 +556,7 @@ const App = () => {
           ref={textAreaRef}
           onBlur={handleBlur}
           style={{
-            top: (activeElement?.y1 || 0) - 12 + panOffset.y,
+            top: (activeElement?.y1 || 0) + panOffset.y,
             left: (activeElement?.x1 || 0) + panOffset.x,
             color: color,
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -553,6 +567,7 @@ const App = () => {
             textAlign: "center",
             lineHeight: "28px",
             fontFamily: "DeliciousHandrawn-Regular",
+            fontSize: "26px",
           }}
           className="fixed text-2xl font-sans m-0 p-0 border-0 outline-none resize-both overflow-hidden whitespace-pre bg-transparent z-[2]"
         />

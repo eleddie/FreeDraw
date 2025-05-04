@@ -10,6 +10,7 @@ export const useHistory = () => {
   ) => {
     const newState =
       typeof action === "function" ? action(history[historyIndex]) : action;
+
     if (overwrite) {
       const historyCopy = [...history];
       historyCopy[historyIndex] = newState;
