@@ -4,6 +4,13 @@ All notable changes to the "freedraw" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.8]
+
+## Changes
+
+- Fixed a bug where the canvas was not being exported correctly
+  - Shapes using Rough.js were not translated correctly to the exported canvas
+
 ## [0.0.7]
 
 ## Changes
