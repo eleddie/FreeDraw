@@ -274,17 +274,35 @@ const App = () => {
 
     const elementsNormalized = elements.map((element) => {
       //  Make each element start at 0,0 using the minX and minY
-      return {
-        ...element,
-        x1: element.x1! - minX + PADDING,
-        y1: element.y1! - minY + PADDING,
-        x2: element.x2! - minX + PADDING,
-        y2: element.y2! - minY + PADDING,
-        points: element.points?.map((point) => ({
-          x: point.x - minX + PADDING,
-          y: point.y - minY + PADDING,
-        })),
-      };
+      if (
+        [TypesTools.Pencil, TypesTools.Image, TypesTools.Text].includes(
+          element.type
+        )
+      ) {
+        return {
+          ...element,
+          x1: element.x1! - minX + PADDING,
+          y1: element.y1! - minY + PADDING,
+          x2: element.x2! - minX + PADDING,
+          y2: element.y2! - minY + PADDING,
+          points: element.points?.map((point) => ({
+            x: point.x - minX + PADDING,
+            y: point.y - minY + PADDING,
+          })),
+        };
+      } else {
+        return createElement(
+          element.id,
+          element.x1! - minX + PADDING,
+          element.y1! - minY + PADDING,
+          element.x2! - minX + PADDING,
+          element.y2! - minY + PADDING,
+          element.type,
+          element.color,
+          element.src,
+          element.initialCoordinates
+        );
+      }
     });
 
     const roughCanvas = rough.canvas(canvas);
