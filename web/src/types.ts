@@ -3,7 +3,6 @@ import { Drawable } from "roughjs/bin/core";
 export enum TypesTools {
   Selection = "selection",
   Eraser = "eraser",
-
   Pencil = "pencil",
   Line = "line",
   Rectangle = "rectangle",

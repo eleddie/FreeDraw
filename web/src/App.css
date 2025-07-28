@@ -2,5 +2,16 @@
   width: 100dvw;
   height: 100dvh;
   margin: 0 auto;
+}
 
+.text-area {
+  outline: none;
+  resize: none;
+  text-align: center;
+  line-height: 28px;
+  padding: 3px 0px 6px 0px;
+  font-family: DeliciousHandrawn-Regular;
+  font-size: 26px;
+  field-sizing: content;
+  overflow: visible;
 }

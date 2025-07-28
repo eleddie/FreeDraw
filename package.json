@@ -5,7 +5,7 @@
   "version": "0.0.8",
   "license": "GPL-3.0-only",
   "publisher": "ProjectSyntax",
-  "icon": "./assets/favicon.png",
+  "icon": "assets/favicon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/eleddie/FreeDraw"

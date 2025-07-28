@@ -679,6 +679,9 @@ export const scaleCanvas = (
   canvas.width = rect.width * dpr;
   canvas.height = rect.height * dpr;
 
+  // Reset the context transform to avoid cumulative scaling issues
+  context.setTransform(1, 0, 0, 1, 0, 0);
+
   // Scale the context to ensure correct drawing operations
   context.scale(dpr, dpr);
 
@@ -688,9 +691,14 @@ export const scaleCanvas = (
   return { dpr, width: rect.width, height: rect.height };
 };
 
+// Get the current zoom level (1.0 = 100%, 1.5 = 150%, etc.)
+export const getZoomLevel = () => {
+  return window.devicePixelRatio;
+};
+
 export const shouldDeleteElement = (element: Element) => {
   const SIZE = 10;
-  const { type, x1, y1, x2, y2, text, points } = element;
+  const { type, x1, y1, x2, y2, text } = element;
   switch (type) {
     case TypesTools.Line:
     case TypesTools.Arrow:
@@ -700,9 +708,7 @@ export const shouldDeleteElement = (element: Element) => {
     case TypesTools.Circle:
       return x2! - x1! < SIZE;
     case TypesTools.Text:
-      return text === "";
-    case TypesTools.Pencil:
-      return points!.length < 5;
+      return text?.trim() === "";
     case TypesTools.Image:
       return x2! - x1! < SIZE || y2! - y1! < SIZE;
     default:

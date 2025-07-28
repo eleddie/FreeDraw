@@ -20,6 +20,7 @@ import useAppState from "./store/state";
 import { useHistory } from "./hooks/useHistory";
 import { Action, ElementPosition, TypesTools } from "./types";
 import { useKeyboard } from "./hooks/useKeyboard";
+import "./App.css";
 
 const App = () => {
   const {
@@ -87,9 +88,8 @@ const App = () => {
   const redrawCanvas = useCallback(() => {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
     const context = canvas.getContext("2d", { willReadFrequently: true })!;
-    scaleCanvas(canvas, context);
-
-    drawAllElements(canvas, context, canvas.width, canvas.height);
+    const { width, height } = scaleCanvas(canvas, context);
+    drawAllElements(canvas, context, width, height);
   }, [drawAllElements]);
 
   useLayoutEffect(() => {
@@ -120,6 +120,30 @@ const App = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, [setDimensions, redrawCanvas]);
+
+  // Handle zoom changes
+  useEffect(() => {
+    const handleZoom = () => {
+      redrawCanvas();
+    };
+
+    // Listen for zoom changes using the devicePixelRatio
+    let lastZoom = window.devicePixelRatio;
+    const checkZoom = () => {
+      const currentZoom = window.devicePixelRatio;
+      if (currentZoom !== lastZoom) {
+        lastZoom = currentZoom;
+        handleZoom();
+      }
+    };
+
+    // Check for zoom changes periodically
+    const zoomInterval = setInterval(checkZoom, 100);
+
+    return () => {
+      clearInterval(zoomInterval);
+    };
+  }, [redrawCanvas]);
 
   useEffect(() => {
     const textArea = textAreaRef.current;
@@ -206,7 +230,7 @@ const App = () => {
         lines?.forEach((line) => {
           const lineWidth = context.measureText(line).width;
           if (lineWidth > textWidth) textWidth = lineWidth;
-          textHeight += 28;
+          textHeight += 32;
         });
         elementsCopy[index] = {
           ...createElement(
@@ -327,14 +351,18 @@ const App = () => {
   useKeyboard(onSaveCanvas);
 
   const getMouseCoordinates = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const clientX = event.clientX - panOffset.x;
-    const clientY = event.clientY - panOffset.y;
+    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    const rect = canvas.getBoundingClientRect();
+
+    // Calculate coordinates relative to the canvas
+    const clientX = event.clientX - rect.left - panOffset.x;
+    const clientY = event.clientY - rect.top - panOffset.y;
     return { clientX, clientY };
   };
 
   const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const { clientX, clientY } = getMouseCoordinates(event);
-
+    const element = getElementAtPosition(clientX, clientY, elements);
     if (action === Action.Writing) return;
     if (action === Action.PickingColor) return;
 
@@ -353,8 +381,15 @@ const App = () => {
       return;
     }
 
+    if (tool === TypesTools.Text && element) {
+      const offsetX = clientX - element.x1!;
+      const offsetY = clientY - element.y1!;
+      setActiveElement({ ...element, offsetX, offsetY });
+      setAction(Action.Writing);
+      return;
+    }
+
     if (tool === TypesTools.Selection) {
-      const element = getElementAtPosition(clientX, clientY, elements);
       if (element) {
         setSelectedElement(element);
         if (element.type === TypesTools.Pencil) {
@@ -552,6 +587,13 @@ const App = () => {
     setActiveElement(null);
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      (event.target as HTMLTextAreaElement).blur();
+    }
+  };
+
   const handleMouseEnter = () => {
     updateCursor(tool);
   };
@@ -563,31 +605,18 @@ const App = () => {
   };
 
   return (
-    <div
-      style={{
-        width: dimensions.width,
-        height: dimensions.height,
-      }}
-    >
-      {!!(action === Action.Writing) && (
+    <div style={{ width: dimensions.width, height: dimensions.height }}>
+      {action === Action.Writing && (
         <textarea
           ref={textAreaRef}
           onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
           style={{
             top: (activeElement?.y1 || 0) + panOffset.y,
             left: (activeElement?.x1 || 0) + panOffset.x,
-            color: color,
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            fieldSizing: "content",
-            outline: "none",
-            resize: "none",
-            textAlign: "center",
-            lineHeight: "28px",
-            fontFamily: "DeliciousHandrawn-Regular",
-            fontSize: "26px",
+            color,
           }}
-          className="fixed text-2xl font-sans m-0 p-0 border-0 outline-none resize-both overflow-hidden whitespace-pre bg-transparent z-[2]"
+          className="text-area fixed text-2xl font-sans m-0 p-0 border-0 outline-none resize-both overflow-hidden whitespace-pre bg-transparent z-[2]"
         />
       )}
       <canvas
