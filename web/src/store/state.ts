@@ -20,8 +20,8 @@ type AppState = {
   activeElement: Element | null;
   setActiveElement: (activeElement: Element | null) => void;
 
-  selectedElement: Element | null;
-  setSelectedElement: (selectedElement: Element | null) => void;
+  selectedElements: Element[];
+  setSelectedElements: (selectedElements: Element[]) => void;
 
   panOffset: { x: number; y: number };
   setPanOffset: (panOffset: { x: number; y: number }) => void;
@@ -69,9 +69,9 @@ const useAppState = create<AppState>((set) => ({
   activeElement: null,
   setActiveElement: (activeElement: Element | null) => set({ activeElement }),
 
-  selectedElement: null,
-  setSelectedElement: (selectedElement: Element | null) =>
-    set({ selectedElement }),
+  selectedElements: [],
+  setSelectedElements: (selectedElements: Element[]) =>
+    set({ selectedElements }),
 
   panOffset: { x: 0, y: 0 },
   setPanOffset: (panOffset: { x: number; y: number }) => set({ panOffset }),

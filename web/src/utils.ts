@@ -463,7 +463,7 @@ export const drawElement = (
   context: CanvasRenderingContext2D,
   element: Element,
   pendingEraseIds: number[],
-  selectedElement: Element | null
+  selectedElements: Element[]
 ) => {
   const isBeingErased = pendingEraseIds.includes(element.id);
   const defaultColor = window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -476,7 +476,7 @@ export const drawElement = (
   }
 
   // Draw selection rectangle
-  if (selectedElement?.id === element.id) {
+  if (selectedElements.some((el) => el.id === element.id)) {
     const padding = 3;
     context.save();
     context.strokeStyle = "red";

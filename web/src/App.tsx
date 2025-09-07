@@ -30,8 +30,8 @@ const App = () => {
     setAction,
     activeElement,
     setActiveElement,
-    selectedElement,
-    setSelectedElement,
+    selectedElements,
+    setSelectedElements,
     panOffset,
     setPanOffset,
     startPanMousePosition,
@@ -46,6 +46,7 @@ const App = () => {
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const pressedKeys = usePressedKeys();
+  const multiMoveStart = useRef<{ x: number; y: number } | null>(null);
 
   const drawAllElements = useCallback(
     (
@@ -70,7 +71,7 @@ const App = () => {
           context,
           element,
           pendingEraseIds,
-          selectedElement
+          selectedElements
         );
       });
       context.restore();
@@ -81,7 +82,7 @@ const App = () => {
       activeElement,
       panOffset,
       pendingEraseIds,
-      selectedElement,
+      selectedElements,
     ]
   );
 
@@ -157,10 +158,10 @@ const App = () => {
   }, [action, activeElement, color]);
 
   useEffect(() => {
-    if (selectedElement && tool !== TypesTools.Selection) {
-      setSelectedElement(null);
+    if (selectedElements.length && tool !== TypesTools.Selection) {
+      setSelectedElements([]);
     }
-  }, [setSelectedElement, selectedElement, tool]);
+  }, [setSelectedElements, selectedElements, tool]);
 
   const updateElement = (
     id: number,
@@ -337,7 +338,7 @@ const App = () => {
         context,
         element,
         pendingEraseIds,
-        selectedElement
+        selectedElements
       );
     });
 
@@ -391,7 +392,29 @@ const App = () => {
 
     if (tool === TypesTools.Selection) {
       if (element) {
-        setSelectedElement(element);
+        if (pressedKeys.has("Shift")) {
+          const alreadySelected = selectedElements.some(
+            (el) => el.id === element.id
+          );
+          if (alreadySelected) {
+            setSelectedElements(
+              selectedElements.filter((el) => el.id !== element.id)
+            );
+          } else {
+            setSelectedElements([...selectedElements, element]);
+          }
+          return;
+        }
+
+        const alreadySelected = selectedElements.some(
+          (el) => el.id === element.id
+        );
+        let newSelected = selectedElements;
+        if (!alreadySelected) {
+          newSelected = [element];
+          setSelectedElements(newSelected);
+        }
+
         if (element.type === TypesTools.Pencil) {
           const xOffsets =
             element.points?.map((point) => clientX - point.x) || [];
@@ -406,12 +429,17 @@ const App = () => {
         setElements((prevState) => prevState);
 
         if (element.position === ElementPosition.Inside) {
+          if (newSelected.length > 1) {
+            multiMoveStart.current = { x: clientX, y: clientY };
+          }
           setAction(Action.Moving);
-        } else {
+        } else if (newSelected.length === 1) {
           setAction(Action.Resizing);
         }
       } else {
-        setSelectedElement(null);
+        if (!pressedKeys.has("Shift")) {
+          setSelectedElements([]);
+        }
       }
     } else {
       const id = getRandomId();
@@ -478,7 +506,38 @@ const App = () => {
         tool
       );
     } else if (action === Action.Moving) {
-      if (activeElement?.type === TypesTools.Pencil) {
+      if (selectedElements.length > 1) {
+        if (multiMoveStart.current) {
+          const deltaX = clientX - multiMoveStart.current.x;
+          const deltaY = clientY - multiMoveStart.current.y;
+          multiMoveStart.current = { x: clientX, y: clientY };
+          const elementsCopy = elements.map((el) => {
+            if (!selectedElements.some((sel) => sel.id === el.id)) return el;
+            if (el.type === TypesTools.Pencil) {
+              const newPoints = el.points?.map((p) => ({
+                x: p.x + deltaX,
+                y: p.y + deltaY,
+              }));
+              return {
+                ...el,
+                points: newPoints,
+                x1: el.x1! + deltaX,
+                y1: el.y1! + deltaY,
+                x2: el.x2! + deltaX,
+                y2: el.y2! + deltaY,
+              };
+            }
+            return {
+              ...el,
+              x1: el.x1! + deltaX,
+              y1: el.y1! + deltaY,
+              x2: el.x2! + deltaX,
+              y2: el.y2! + deltaY,
+            };
+          });
+          setElements(elementsCopy, true);
+        }
+      } else if (activeElement?.type === TypesTools.Pencil) {
         const newPoints = activeElement.points?.map((_, index) => ({
           x: clientX - (activeElement.xOffsets?.[index] || 0),
           y: clientY - (activeElement.yOffsets?.[index] || 0),
@@ -567,6 +626,7 @@ const App = () => {
     }
 
     setAction(Action.None);
+    multiMoveStart.current = null;
 
     const el = elements.find((e) => e.id === activeElement?.id);
     if (el && shouldDeleteElement(el)) {
