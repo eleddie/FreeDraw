@@ -9,7 +9,7 @@ This is an open-source project created by the community, for the community. We w
 1. **Installation**: Install the FreeDraw extension from the Visual Studio Code marketplace.
 2. **Activation**: Activate the extension using the command palette (`Ctrl+Shift+P`) and typing `Free Draw`.
 3. **Drawing**: Use your mouse or stylus to draw on the editor. You can change colors, brush sizes, and more from the toolbar.
-4. **Saving**: Save your drawings as images by clicking the save button in the toolbar.
+4. **Saving**: Drawings are automatically saved locally and can be exported as images by clicking the save button in the toolbar.
 
 ## Screenshots
 

@@ -55,6 +55,26 @@ const App = () => {
   } | null>(null);
   const selectionStart = useRef<Element[]>([]);
 
+  // Load any persisted drawing when the application starts
+  useEffect(() => {
+    const saved = localStorage.getItem("freedraw-elements");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setElements(parsed, true);
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, [setElements]);
+
+  // Automatically save the current drawing after every change
+  useEffect(() => {
+    localStorage.setItem("freedraw-elements", JSON.stringify(elements));
+  }, [elements]);
+
   const drawAllElements = useCallback(
     (
       canvas: HTMLCanvasElement,
