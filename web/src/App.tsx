@@ -88,7 +88,8 @@ const App = () => {
         const ry = Math.min(y1, y2);
         const rw = Math.abs(x2 - x1);
         const rh = Math.abs(y2 - y1);
-        const defaultColor = window.matchMedia("(prefers-color-scheme: dark)").matches
+        const defaultColor = window.matchMedia("(prefers-color-scheme: dark)")
+          .matches
           ? "#ffffff"
           : "#000000";
         context.strokeStyle = defaultColor;
@@ -293,9 +294,10 @@ const App = () => {
     }
     setElements(elementsCopy, true);
     if (updated && selectedElements.some((el) => el.id === id)) {
-      setSelectedElements((prev) =>
-        prev.map((el) => (el.id === id ? updated! : el))
+      const nextSelectedElements = selectedElements.map((el) =>
+        el.id === id ? updated! : el
       );
+      setSelectedElements(nextSelectedElements);
     }
   };
 
@@ -620,12 +622,10 @@ const App = () => {
             };
           });
           setElements(elementsCopy, true);
-          setSelectedElements((prev) =>
-            prev.map(
-              (sel) =>
-                elementsCopy.find((el) => el.id === sel.id) || sel
-            )
+          const nextSelectedElements = selectedElements.map(
+            (sel) => elementsCopy.find((el) => el.id === sel.id) || sel
           );
+          setSelectedElements(nextSelectedElements);
         }
       } else if (activeElement?.type === TypesTools.Pencil) {
         const newPoints = activeElement.points?.map((_, index) => ({
@@ -641,13 +641,10 @@ const App = () => {
           points: newPoints,
         };
         setElements(elementsCopy, true);
-        setSelectedElements((prev) =>
-          prev.map((sel) =>
-            sel.id === activeElement.id
-              ? elementsCopy[elementId]
-              : sel
-          )
+        const nextSelectedElements = selectedElements.map((sel) =>
+          sel.id === activeElement.id ? elementsCopy[elementId] : sel
         );
+        setSelectedElements(nextSelectedElements);
       } else {
         if (!activeElement) return;
         const { id, x1, x2, y1, y2, type, offsetX, offsetY } = activeElement;
