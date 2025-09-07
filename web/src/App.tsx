@@ -209,11 +209,12 @@ const App = () => {
   ) => {
     const elementsCopy = [...elements];
     const index = elementsCopy.findIndex((e) => e.id === id);
+    let updated: Element | null = null;
     switch (type) {
       case TypesTools.Line:
       case TypesTools.Rectangle:
       case TypesTools.Circle:
-        elementsCopy[index] = createElement(
+        updated = createElement(
           id,
           x1,
           y1,
@@ -224,9 +225,10 @@ const App = () => {
           undefined,
           elementsCopy[index].initialCoordinates
         );
+        elementsCopy[index] = updated;
         break;
       case TypesTools.Image:
-        elementsCopy[index] = createElement(
+        updated = createElement(
           id,
           x1,
           y1,
@@ -236,15 +238,17 @@ const App = () => {
           undefined,
           elementsCopy[index].src
         );
+        elementsCopy[index] = updated;
         break;
       case TypesTools.Pencil:
         elementsCopy[index].points = [
           ...elementsCopy[index].points!,
           { x: x2, y: y2 },
         ];
+        updated = elementsCopy[index];
         break;
       case TypesTools.Arrow:
-        elementsCopy[index] = createElement(
+        updated = createElement(
           id,
           x1,
           y1,
@@ -253,6 +257,7 @@ const App = () => {
           type,
           elementsCopy[index].color
         );
+        elementsCopy[index] = updated;
         break;
       case TypesTools.Text: {
         const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -268,7 +273,7 @@ const App = () => {
           if (lineWidth > textWidth) textWidth = lineWidth;
           textHeight += 32;
         });
-        elementsCopy[index] = {
+        updated = {
           ...createElement(
             id,
             x1,
@@ -280,12 +285,18 @@ const App = () => {
           ),
           text: options?.text,
         };
+        elementsCopy[index] = updated;
         break;
       }
       default:
         throw new Error(`Type not recognized: ${type}`);
     }
     setElements(elementsCopy, true);
+    if (updated && selectedElements.some((el) => el.id === id)) {
+      setSelectedElements((prev) =>
+        prev.map((el) => (el.id === id ? updated! : el))
+      );
+    }
   };
 
   const onSaveCanvas = () => {
@@ -609,6 +620,12 @@ const App = () => {
             };
           });
           setElements(elementsCopy, true);
+          setSelectedElements((prev) =>
+            prev.map(
+              (sel) =>
+                elementsCopy.find((el) => el.id === sel.id) || sel
+            )
+          );
         }
       } else if (activeElement?.type === TypesTools.Pencil) {
         const newPoints = activeElement.points?.map((_, index) => ({
@@ -624,6 +641,13 @@ const App = () => {
           points: newPoints,
         };
         setElements(elementsCopy, true);
+        setSelectedElements((prev) =>
+          prev.map((sel) =>
+            sel.id === activeElement.id
+              ? elementsCopy[elementId]
+              : sel
+          )
+        );
       } else {
         if (!activeElement) return;
         const { id, x1, x2, y1, y2, type, offsetX, offsetY } = activeElement;
