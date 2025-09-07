@@ -39,6 +39,7 @@ export enum Action {
   Drawing = "drawing",
   Moving = "moving",
   Resizing = "resizing",
+  Selecting = "selecting",
   Writing = "writing",
   Panning = "panning",
   PickingColor = "pickingColor",

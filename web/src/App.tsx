@@ -18,7 +18,7 @@ import {
 import Toolbar from "./components/Toolbar";
 import useAppState from "./store/state";
 import { useHistory } from "./hooks/useHistory";
-import { Action, ElementPosition, TypesTools } from "./types";
+import { Action, ElementPosition, Element, TypesTools } from "./types";
 import { useKeyboard } from "./hooks/useKeyboard";
 import "./App.css";
 
@@ -47,6 +47,13 @@ const App = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const pressedKeys = usePressedKeys();
   const multiMoveStart = useRef<{ x: number; y: number } | null>(null);
+  const selectionBox = useRef<{
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  } | null>(null);
+  const selectionStart = useRef<Element[]>([]);
 
   const drawAllElements = useCallback(
     (
@@ -74,6 +81,21 @@ const App = () => {
           selectedElements
         );
       });
+
+      if (action === Action.Selecting && selectionBox.current) {
+        const { x1, y1, x2, y2 } = selectionBox.current;
+        const rx = Math.min(x1, x2);
+        const ry = Math.min(y1, y2);
+        const rw = Math.abs(x2 - x1);
+        const rh = Math.abs(y2 - y1);
+        const defaultColor = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "#ffffff"
+          : "#000000";
+        context.strokeStyle = defaultColor;
+        context.setLineDash([5, 5]);
+        context.strokeRect(rx, ry, rw, rh);
+        context.setLineDash([]);
+      }
       context.restore();
     },
     [
@@ -162,6 +184,19 @@ const App = () => {
       setSelectedElements([]);
     }
   }, [setSelectedElements, selectedElements, tool]);
+
+  const getElementBounds = (element: Element) => {
+    if (element.type === TypesTools.Pencil) {
+      const { minX, minY, maxX, maxY } = getStrokeBounds(element.points!);
+      return { x1: minX, y1: minY, x2: maxX, y2: maxY };
+    }
+    return {
+      x1: Math.min(element.x1!, element.x2!),
+      y1: Math.min(element.y1!, element.y2!),
+      x2: Math.max(element.x1!, element.x2!),
+      y2: Math.max(element.y1!, element.y2!),
+    };
+  };
 
   const updateElement = (
     id: number,
@@ -439,7 +474,17 @@ const App = () => {
       } else {
         if (!pressedKeys.has("Shift")) {
           setSelectedElements([]);
+          selectionStart.current = [];
+        } else {
+          selectionStart.current = selectedElements;
         }
+        selectionBox.current = {
+          x1: clientX,
+          y1: clientY,
+          x2: clientX,
+          y2: clientY,
+        };
+        setAction(Action.Selecting);
       }
     } else {
       const id = getRandomId();
@@ -485,6 +530,34 @@ const App = () => {
             ? cursorForPosition(element.position)
             : "default";
       }
+    }
+
+    if (action === Action.Selecting) {
+      if (selectionBox.current) {
+        selectionBox.current.x2 = clientX;
+        selectionBox.current.y2 = clientY;
+        const { x1, y1, x2, y2 } = selectionBox.current;
+        const minX = Math.min(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxX = Math.max(x1, x2);
+        const maxY = Math.max(y1, y2);
+        const within = elements.filter((el) => {
+          const bounds = getElementBounds(el);
+          return (
+            bounds.x1 >= minX &&
+            bounds.y1 >= minY &&
+            bounds.x2 <= maxX &&
+            bounds.y2 <= maxY
+          );
+        });
+        const base = [...selectionStart.current];
+        within.forEach((el) => {
+          if (!base.some((sel) => sel.id === el.id)) base.push(el);
+        });
+        setSelectedElements(base);
+      }
+      redrawCanvas();
+      return;
     }
 
     if (action === Action.Erasing) {
@@ -591,6 +664,34 @@ const App = () => {
 
   const handleMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const { clientX, clientY } = getMouseCoordinates(event);
+    if (action === Action.Selecting) {
+      if (selectionBox.current) {
+        const { x1, y1, x2, y2 } = selectionBox.current;
+        const minX = Math.min(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxX = Math.max(x1, x2);
+        const maxY = Math.max(y1, y2);
+        const within = elements.filter((el) => {
+          const bounds = getElementBounds(el);
+          return (
+            bounds.x1 >= minX &&
+            bounds.y1 >= minY &&
+            bounds.x2 <= maxX &&
+            bounds.y2 <= maxY
+          );
+        });
+        const base = [...selectionStart.current];
+        within.forEach((el) => {
+          if (!base.some((sel) => sel.id === el.id)) base.push(el);
+        });
+        setSelectedElements(base);
+      }
+      selectionBox.current = null;
+      selectionStart.current = [];
+      redrawCanvas();
+      setAction(Action.None);
+      return;
+    }
     if (activeElement) {
       if (
         activeElement.type === TypesTools.Text &&
