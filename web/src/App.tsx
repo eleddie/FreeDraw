@@ -613,6 +613,26 @@ const App = () => {
                 y2: el.y2! + deltaY,
               };
             }
+            if (
+              [
+                TypesTools.Line,
+                TypesTools.Rectangle,
+                TypesTools.Circle,
+                TypesTools.Arrow,
+              ].includes(el.type)
+            ) {
+              return createElement(
+                el.id,
+                el.x1! + deltaX,
+                el.y1! + deltaY,
+                el.x2! + deltaX,
+                el.y2! + deltaY,
+                el.type,
+                el.color,
+                el.src,
+                el.initialCoordinates
+              );
+            }
             return {
               ...el,
               x1: el.x1! + deltaX,
