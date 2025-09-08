@@ -2,6 +2,9 @@ import { create } from "zustand";
 import { Action, Element, TypesTools } from "../types";
 
 type AppState = {
+  isInitialized: boolean;
+  setIsInitialized: (isInitialized: boolean) => void;
+
   dimensions: { width: number; height: number };
   setDimensions: (dimensions: { width: number; height: number }) => void;
 
@@ -50,6 +53,9 @@ const color = window.matchMedia("(prefers-color-scheme: dark)").matches
   : "#000000";
 
 const useAppState = create<AppState>((set) => ({
+  isInitialized: false,
+  setIsInitialized: (isInitialized: boolean) => set({ isInitialized }),
+
   dimensions: { width: window.innerWidth, height: window.innerHeight },
   setDimensions: (dimensions: { width: number; height: number }) =>
     set({ dimensions }),

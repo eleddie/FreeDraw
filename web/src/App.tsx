@@ -40,6 +40,8 @@ const App = () => {
     setPendingEraseIds,
     dimensions,
     setDimensions,
+    isInitialized,
+    setIsInitialized,
   } = useAppState();
 
   const { elements, setElements, undo } = useHistory();
@@ -56,22 +58,25 @@ const App = () => {
   const selectionStart = useRef<Element[]>([]);
 
   useEffect(() => {
+    if (isInitialized) return;
     const saved = localStorage.getItem("freedraw-elements");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          setElements(parsed, true);
+          setElements(parsed);
+          setIsInitialized(true);
         }
       } catch {
         // ignore parse errors
       }
     }
-  }, []);
+  }, [elements, isInitialized, setIsInitialized, setElements]);
 
   useEffect(() => {
+    if (!isInitialized) return;
     localStorage.setItem("freedraw-elements", JSON.stringify(elements));
-  }, [elements]);
+  }, [elements, isInitialized, setElements]);
 
   const drawAllElements = useCallback(
     (
