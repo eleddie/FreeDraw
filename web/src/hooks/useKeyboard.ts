@@ -11,8 +11,8 @@ export const useKeyboard = (onSaveCanvas: () => void) => {
     setColor,
     selectedElements,
     setSelectedElements,
-    setCopiedElement,
-    copiedElement,
+    setCopiedElements,
+    copiedElements,
   } = useAppState();
 
   const onChangeTool = (tool: TypesTools) => {
@@ -42,13 +42,17 @@ export const useKeyboard = (onSaveCanvas: () => void) => {
     }
   });
   useHotkeys(["ctrl+c", "meta+c"], () => {
-    setCopiedElement(
-      elements.find((element) => element.id === selectedElements[0]?.id) || null
+    setCopiedElements(
+      elements.filter((element) =>
+        selectedElements.some((sel) => sel.id === element.id)
+      )
     );
   });
   useHotkeys(["ctrl+x", "meta+x"], () => {
-    setCopiedElement(
-      elements.find((element) => element.id === selectedElements[0]?.id) || null
+    setCopiedElements(
+      elements.filter((element) =>
+        selectedElements.some((sel) => sel.id === element.id)
+      )
     );
     setElements(
       elements.filter(
@@ -58,11 +62,14 @@ export const useKeyboard = (onSaveCanvas: () => void) => {
     setSelectedElements([]);
   });
   useHotkeys(["ctrl+v", "meta+v"], () => {
-    if (copiedElement) {
-      const newElement = { ...copiedElement, id: getRandomId() };
-      setSelectedElements([newElement]);
-      setElements([...elements, newElement]);
-      setCopiedElement(null);
+    if (copiedElements.length) {
+      const newElements = copiedElements.map((copiedElement) => ({
+        ...copiedElement,
+        id: getRandomId(),
+      }));
+      setSelectedElements(newElements);
+      setElements([...elements, ...newElements]);
+      setCopiedElements([]);
     }
   });
 

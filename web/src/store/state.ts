@@ -41,8 +41,8 @@ type AppState = {
   pendingEraseIds: number[];
   setPendingEraseIds: (pendingEraseIds: number[]) => void;
 
-  copiedElement: Element | null;
-  setCopiedElement: (copiedElement: Element | null) => void;
+  copiedElements: Element[];
+  setCopiedElements: (copiedElements: Element[]) => void;
 };
 
 const color = window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -89,8 +89,8 @@ const useAppState = create<AppState>((set) => ({
   pendingEraseIds: [],
   setPendingEraseIds: (pendingEraseIds: number[]) => set({ pendingEraseIds }),
 
-  copiedElement: null,
-  setCopiedElement: (copiedElement: Element | null) => set({ copiedElement }),
+  copiedElements: [],
+  setCopiedElements: (copiedElements: Element[]) => set({ copiedElements }),
 }));
 
 export default useAppState;
