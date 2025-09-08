@@ -40,6 +40,8 @@ const App = () => {
     setPendingEraseIds,
     dimensions,
     setDimensions,
+    isInitialized,
+    setIsInitialized,
   } = useAppState();
 
   const { elements, setElements, undo } = useHistory();
@@ -54,6 +56,49 @@ const App = () => {
     y2: number;
   } | null>(null);
   const selectionStart = useRef<Element[]>([]);
+
+  useEffect(() => {
+    if (isInitialized) return;
+    const saved = localStorage.getItem("freedraw-elements");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setElements(parsed);
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    const savedPanOffset = localStorage.getItem("freedraw-pan-offset");
+    if (savedPanOffset) {
+      try {
+        const parsedPanOffset = JSON.parse(savedPanOffset);
+        if (
+          parsedPanOffset &&
+          typeof parsedPanOffset.x === "number" &&
+          typeof parsedPanOffset.y === "number"
+        ) {
+          setPanOffset(parsedPanOffset);
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    setIsInitialized(true);
+  }, [elements, isInitialized, setIsInitialized, setElements, setPanOffset]);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    localStorage.setItem("freedraw-elements", JSON.stringify(elements));
+  }, [elements, isInitialized]);
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    localStorage.setItem("freedraw-pan-offset", JSON.stringify(panOffset));
+  }, [panOffset, isInitialized]);
 
   const drawAllElements = useCallback(
     (

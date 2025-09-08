@@ -45,6 +45,7 @@ export default function Toolbar({ onSaveCanvas }: ToolbarProps) {
 
   const onClearCanvas = () => {
     setElements([]);
+    localStorage.removeItem("freedraw-elements");
   };
 
   const onUploadImage = () => {
