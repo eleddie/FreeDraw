@@ -18,7 +18,7 @@ import {
 import Toolbar from "./components/Toolbar";
 import useAppState from "./store/state";
 import { useHistory } from "./hooks/useHistory";
-import { Action, ElementPosition, TypesTools } from "./types";
+import { Action, ElementPosition, Element, TypesTools } from "./types";
 import { useKeyboard } from "./hooks/useKeyboard";
 import "./App.css";
 
@@ -30,8 +30,8 @@ const App = () => {
     setAction,
     activeElement,
     setActiveElement,
-    selectedElement,
-    setSelectedElement,
+    selectedElements,
+    setSelectedElements,
     panOffset,
     setPanOffset,
     startPanMousePosition,
@@ -46,6 +46,14 @@ const App = () => {
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const pressedKeys = usePressedKeys();
+  const multiMoveStart = useRef<{ x: number; y: number } | null>(null);
+  const selectionBox = useRef<{
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  } | null>(null);
+  const selectionStart = useRef<Element[]>([]);
 
   const drawAllElements = useCallback(
     (
@@ -70,9 +78,25 @@ const App = () => {
           context,
           element,
           pendingEraseIds,
-          selectedElement
+          selectedElements
         );
       });
+
+      if (action === Action.Selecting && selectionBox.current) {
+        const { x1, y1, x2, y2 } = selectionBox.current;
+        const rx = Math.min(x1, x2);
+        const ry = Math.min(y1, y2);
+        const rw = Math.abs(x2 - x1);
+        const rh = Math.abs(y2 - y1);
+        const defaultColor = window.matchMedia("(prefers-color-scheme: dark)")
+          .matches
+          ? "#ffffff"
+          : "#000000";
+        context.strokeStyle = defaultColor;
+        context.setLineDash([5, 5]);
+        context.strokeRect(rx, ry, rw, rh);
+        context.setLineDash([]);
+      }
       context.restore();
     },
     [
@@ -81,7 +105,7 @@ const App = () => {
       activeElement,
       panOffset,
       pendingEraseIds,
-      selectedElement,
+      selectedElements,
     ]
   );
 
@@ -157,10 +181,23 @@ const App = () => {
   }, [action, activeElement, color]);
 
   useEffect(() => {
-    if (selectedElement && tool !== TypesTools.Selection) {
-      setSelectedElement(null);
+    if (selectedElements.length && tool !== TypesTools.Selection) {
+      setSelectedElements([]);
     }
-  }, [setSelectedElement, selectedElement, tool]);
+  }, [setSelectedElements, selectedElements, tool]);
+
+  const getElementBounds = (element: Element) => {
+    if (element.type === TypesTools.Pencil) {
+      const { minX, minY, maxX, maxY } = getStrokeBounds(element.points!);
+      return { x1: minX, y1: minY, x2: maxX, y2: maxY };
+    }
+    return {
+      x1: Math.min(element.x1!, element.x2!),
+      y1: Math.min(element.y1!, element.y2!),
+      x2: Math.max(element.x1!, element.x2!),
+      y2: Math.max(element.y1!, element.y2!),
+    };
+  };
 
   const updateElement = (
     id: number,
@@ -173,11 +210,12 @@ const App = () => {
   ) => {
     const elementsCopy = [...elements];
     const index = elementsCopy.findIndex((e) => e.id === id);
+    let updated: Element | null = null;
     switch (type) {
       case TypesTools.Line:
       case TypesTools.Rectangle:
       case TypesTools.Circle:
-        elementsCopy[index] = createElement(
+        updated = createElement(
           id,
           x1,
           y1,
@@ -188,9 +226,10 @@ const App = () => {
           undefined,
           elementsCopy[index].initialCoordinates
         );
+        elementsCopy[index] = updated;
         break;
       case TypesTools.Image:
-        elementsCopy[index] = createElement(
+        updated = createElement(
           id,
           x1,
           y1,
@@ -200,15 +239,17 @@ const App = () => {
           undefined,
           elementsCopy[index].src
         );
+        elementsCopy[index] = updated;
         break;
       case TypesTools.Pencil:
         elementsCopy[index].points = [
           ...elementsCopy[index].points!,
           { x: x2, y: y2 },
         ];
+        updated = elementsCopy[index];
         break;
       case TypesTools.Arrow:
-        elementsCopy[index] = createElement(
+        updated = createElement(
           id,
           x1,
           y1,
@@ -217,6 +258,7 @@ const App = () => {
           type,
           elementsCopy[index].color
         );
+        elementsCopy[index] = updated;
         break;
       case TypesTools.Text: {
         const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -232,7 +274,7 @@ const App = () => {
           if (lineWidth > textWidth) textWidth = lineWidth;
           textHeight += 32;
         });
-        elementsCopy[index] = {
+        updated = {
           ...createElement(
             id,
             x1,
@@ -244,12 +286,19 @@ const App = () => {
           ),
           text: options?.text,
         };
+        elementsCopy[index] = updated;
         break;
       }
       default:
         throw new Error(`Type not recognized: ${type}`);
     }
     setElements(elementsCopy, true);
+    if (updated && selectedElements.some((el) => el.id === id)) {
+      const nextSelectedElements = selectedElements.map((el) =>
+        el.id === id ? updated! : el
+      );
+      setSelectedElements(nextSelectedElements);
+    }
   };
 
   const onSaveCanvas = () => {
@@ -337,7 +386,7 @@ const App = () => {
         context,
         element,
         pendingEraseIds,
-        selectedElement
+        selectedElements
       );
     });
 
@@ -391,7 +440,29 @@ const App = () => {
 
     if (tool === TypesTools.Selection) {
       if (element) {
-        setSelectedElement(element);
+        if (pressedKeys.has("Shift")) {
+          const alreadySelected = selectedElements.some(
+            (el) => el.id === element.id
+          );
+          if (alreadySelected) {
+            setSelectedElements(
+              selectedElements.filter((el) => el.id !== element.id)
+            );
+          } else {
+            setSelectedElements([...selectedElements, element]);
+          }
+          return;
+        }
+
+        const alreadySelected = selectedElements.some(
+          (el) => el.id === element.id
+        );
+        let newSelected = selectedElements;
+        if (!alreadySelected) {
+          newSelected = [element];
+          setSelectedElements(newSelected);
+        }
+
         if (element.type === TypesTools.Pencil) {
           const xOffsets =
             element.points?.map((point) => clientX - point.x) || [];
@@ -406,12 +477,27 @@ const App = () => {
         setElements((prevState) => prevState);
 
         if (element.position === ElementPosition.Inside) {
+          if (newSelected.length > 1) {
+            multiMoveStart.current = { x: clientX, y: clientY };
+          }
           setAction(Action.Moving);
-        } else {
+        } else if (newSelected.length === 1) {
           setAction(Action.Resizing);
         }
       } else {
-        setSelectedElement(null);
+        if (!pressedKeys.has("Shift")) {
+          setSelectedElements([]);
+          selectionStart.current = [];
+        } else {
+          selectionStart.current = selectedElements;
+        }
+        selectionBox.current = {
+          x1: clientX,
+          y1: clientY,
+          x2: clientX,
+          y2: clientY,
+        };
+        setAction(Action.Selecting);
       }
     } else {
       const id = getRandomId();
@@ -459,6 +545,34 @@ const App = () => {
       }
     }
 
+    if (action === Action.Selecting) {
+      if (selectionBox.current) {
+        selectionBox.current.x2 = clientX;
+        selectionBox.current.y2 = clientY;
+        const { x1, y1, x2, y2 } = selectionBox.current;
+        const minX = Math.min(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxX = Math.max(x1, x2);
+        const maxY = Math.max(y1, y2);
+        const within = elements.filter((el) => {
+          const bounds = getElementBounds(el);
+          return (
+            bounds.x1 >= minX &&
+            bounds.y1 >= minY &&
+            bounds.x2 <= maxX &&
+            bounds.y2 <= maxY
+          );
+        });
+        const base = [...selectionStart.current];
+        within.forEach((el) => {
+          if (!base.some((sel) => sel.id === el.id)) base.push(el);
+        });
+        setSelectedElements(base);
+      }
+      redrawCanvas();
+      return;
+    }
+
     if (action === Action.Erasing) {
       const element = getElementAtPosition(clientX, clientY, elements);
       if (element && !pendingEraseIds.includes(element.id)) {
@@ -478,7 +592,62 @@ const App = () => {
         tool
       );
     } else if (action === Action.Moving) {
-      if (activeElement?.type === TypesTools.Pencil) {
+      if (selectedElements.length > 1) {
+        if (multiMoveStart.current) {
+          const deltaX = clientX - multiMoveStart.current.x;
+          const deltaY = clientY - multiMoveStart.current.y;
+          multiMoveStart.current = { x: clientX, y: clientY };
+          const elementsCopy = elements.map((el) => {
+            if (!selectedElements.some((sel) => sel.id === el.id)) return el;
+            if (el.type === TypesTools.Pencil) {
+              const newPoints = el.points?.map((p) => ({
+                x: p.x + deltaX,
+                y: p.y + deltaY,
+              }));
+              return {
+                ...el,
+                points: newPoints,
+                x1: el.x1! + deltaX,
+                y1: el.y1! + deltaY,
+                x2: el.x2! + deltaX,
+                y2: el.y2! + deltaY,
+              };
+            }
+            if (
+              [
+                TypesTools.Line,
+                TypesTools.Rectangle,
+                TypesTools.Circle,
+                TypesTools.Arrow,
+              ].includes(el.type)
+            ) {
+              return createElement(
+                el.id,
+                el.x1! + deltaX,
+                el.y1! + deltaY,
+                el.x2! + deltaX,
+                el.y2! + deltaY,
+                el.type,
+                el.color,
+                el.src,
+                el.initialCoordinates
+              );
+            }
+            return {
+              ...el,
+              x1: el.x1! + deltaX,
+              y1: el.y1! + deltaY,
+              x2: el.x2! + deltaX,
+              y2: el.y2! + deltaY,
+            };
+          });
+          setElements(elementsCopy, true);
+          const nextSelectedElements = selectedElements.map(
+            (sel) => elementsCopy.find((el) => el.id === sel.id) || sel
+          );
+          setSelectedElements(nextSelectedElements);
+        }
+      } else if (activeElement?.type === TypesTools.Pencil) {
         const newPoints = activeElement.points?.map((_, index) => ({
           x: clientX - (activeElement.xOffsets?.[index] || 0),
           y: clientY - (activeElement.yOffsets?.[index] || 0),
@@ -492,6 +661,10 @@ const App = () => {
           points: newPoints,
         };
         setElements(elementsCopy, true);
+        const nextSelectedElements = selectedElements.map((sel) =>
+          sel.id === activeElement.id ? elementsCopy[elementId] : sel
+        );
+        setSelectedElements(nextSelectedElements);
       } else {
         if (!activeElement) return;
         const { id, x1, x2, y1, y2, type, offsetX, offsetY } = activeElement;
@@ -532,6 +705,34 @@ const App = () => {
 
   const handleMouseUp = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const { clientX, clientY } = getMouseCoordinates(event);
+    if (action === Action.Selecting) {
+      if (selectionBox.current) {
+        const { x1, y1, x2, y2 } = selectionBox.current;
+        const minX = Math.min(x1, x2);
+        const minY = Math.min(y1, y2);
+        const maxX = Math.max(x1, x2);
+        const maxY = Math.max(y1, y2);
+        const within = elements.filter((el) => {
+          const bounds = getElementBounds(el);
+          return (
+            bounds.x1 >= minX &&
+            bounds.y1 >= minY &&
+            bounds.x2 <= maxX &&
+            bounds.y2 <= maxY
+          );
+        });
+        const base = [...selectionStart.current];
+        within.forEach((el) => {
+          if (!base.some((sel) => sel.id === el.id)) base.push(el);
+        });
+        setSelectedElements(base);
+      }
+      selectionBox.current = null;
+      selectionStart.current = [];
+      redrawCanvas();
+      setAction(Action.None);
+      return;
+    }
     if (activeElement) {
       if (
         activeElement.type === TypesTools.Text &&
@@ -567,6 +768,7 @@ const App = () => {
     }
 
     setAction(Action.None);
+    multiMoveStart.current = null;
 
     const el = elements.find((e) => e.id === activeElement?.id);
     if (el && shouldDeleteElement(el)) {

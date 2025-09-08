@@ -9,10 +9,10 @@ export const useKeyboard = (onSaveCanvas: () => void) => {
   const {
     setTool,
     setColor,
-    selectedElement,
-    setSelectedElement,
-    setCopiedElement,
-    copiedElement,
+    selectedElements,
+    setSelectedElements,
+    setCopiedElements,
+    copiedElements,
   } = useAppState();
 
   const onChangeTool = (tool: TypesTools) => {
@@ -32,32 +32,44 @@ export const useKeyboard = (onSaveCanvas: () => void) => {
   useHotkeys("e", () => onChangeTool(TypesTools.Eraser));
   useHotkeys("x", () => setColor(getRandomColor()));
   useHotkeys("backspace", () => {
-    if (selectedElement) {
+    if (selectedElements.length) {
       setElements(
-        elements.filter((element) => element.id !== selectedElement.id)
+        elements.filter(
+          (element) => !selectedElements.some((sel) => sel.id === element.id)
+        )
       );
-      setSelectedElement(null);
+      setSelectedElements([]);
     }
   });
   useHotkeys(["ctrl+c", "meta+c"], () => {
-    setCopiedElement(
-      elements.find((element) => element.id === selectedElement?.id) || null
+    setCopiedElements(
+      elements.filter((element) =>
+        selectedElements.some((sel) => sel.id === element.id)
+      )
     );
   });
   useHotkeys(["ctrl+x", "meta+x"], () => {
-    setCopiedElement(
-      elements.find((element) => element.id === selectedElement?.id) || null
+    setCopiedElements(
+      elements.filter((element) =>
+        selectedElements.some((sel) => sel.id === element.id)
+      )
     );
     setElements(
-      elements.filter((element) => element.id !== selectedElement?.id)
+      elements.filter(
+        (element) => !selectedElements.some((sel) => sel.id === element.id)
+      )
     );
+    setSelectedElements([]);
   });
   useHotkeys(["ctrl+v", "meta+v"], () => {
-    if (copiedElement) {
-      const newElement = { ...copiedElement, id: getRandomId() };
-      setSelectedElement(newElement);
-      setElements([...elements, newElement]);
-      setCopiedElement(null);
+    if (copiedElements.length) {
+      const newElements = copiedElements.map((copiedElement) => ({
+        ...copiedElement,
+        id: getRandomId(),
+      }));
+      setSelectedElements(newElements);
+      setElements([...elements, ...newElements]);
+      setCopiedElements([]);
     }
   });
 
