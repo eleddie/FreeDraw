@@ -715,3 +715,37 @@ export const shouldDeleteElement = (element: Element) => {
       return false;
   }
 };
+
+// Font loading utility
+export const loadFont = (fontFamily: string): Promise<FontFace> => {
+  return new Promise((resolve) => {
+    // Check if font is already loaded
+    if (document.fonts.check(`16px ${fontFamily}`)) {
+      resolve(new FontFace(fontFamily, ""));
+      return;
+    }
+
+    // Load the font
+    const font = new FontFace(
+      fontFamily,
+      `url(./assets/${fontFamily}.ttf) format('truetype')`
+    );
+
+    font
+      .load()
+      .then((loadedFont) => {
+        document.fonts.add(loadedFont);
+        resolve(loadedFont);
+      })
+      .catch((error) => {
+        console.warn(`Failed to load font ${fontFamily}:`, error);
+        // Still resolve to avoid blocking the app
+        resolve(new FontFace(fontFamily, ""));
+      });
+  });
+};
+
+// Check if font is loaded
+export const isFontLoaded = (fontFamily: string): boolean => {
+  return document.fonts.check(`16px ${fontFamily}`);
+};

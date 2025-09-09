@@ -1,4 +1,10 @@
-import React, { useEffect, useLayoutEffect, useRef, useCallback } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+  useState,
+} from "react";
 import rough from "roughjs";
 import {
   usePressedKeys,
@@ -14,8 +20,10 @@ import {
   updateCursor,
   scaleCanvas,
   shouldDeleteElement,
+  loadFont,
 } from "./utils";
 import Toolbar from "./components/Toolbar";
+import LoadingScreen from "./components/LoadingScreen";
 import useAppState from "./store/state";
 import { useHistory } from "./hooks/useHistory";
 import { Action, ElementPosition, Element, TypesTools } from "./types";
@@ -45,6 +53,7 @@ const App = () => {
   } = useAppState();
 
   const { elements, setElements, undo } = useHistory();
+  const [isAppReady, setIsAppReady] = useState(false);
 
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const pressedKeys = usePressedKeys();
@@ -56,6 +65,21 @@ const App = () => {
     y2: number;
   } | null>(null);
   const selectionStart = useRef<Element[]>([]);
+
+  // Load font on component mount and set app ready state
+  useEffect(() => {
+    const loadAppFont = async () => {
+      try {
+        await loadFont("DeliciousHandrawn-Regular");
+        setIsAppReady(true);
+      } catch (error) {
+        console.warn("Failed to load font, proceeding with fallback:", error);
+        setIsAppReady(true);
+      }
+    };
+
+    loadAppFont();
+  }, []);
 
   useEffect(() => {
     if (isInitialized) return;
@@ -155,15 +179,23 @@ const App = () => {
   );
 
   const redrawCanvas = useCallback(() => {
+    if (!isAppReady) return; // Don't render until app is ready
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
     const context = canvas.getContext("2d", { willReadFrequently: true })!;
     const { width, height } = scaleCanvas(canvas, context);
     drawAllElements(canvas, context, width, height);
-  }, [drawAllElements]);
+  }, [drawAllElements, isAppReady]);
 
   useLayoutEffect(() => {
     redrawCanvas();
   }, [redrawCanvas]);
+
+  // Redraw canvas when app becomes ready
+  useEffect(() => {
+    if (isAppReady && isInitialized) {
+      redrawCanvas();
+    }
+  }, [isAppReady, isInitialized, redrawCanvas]);
 
   useEffect(() => {
     const panFunction = (event: WheelEvent) => {
@@ -850,6 +882,13 @@ const App = () => {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
     canvas.style.cursor = "default";
   };
+
+  // Show loading screen while font is loading
+  if (!isAppReady) {
+    return (
+      <LoadingScreen width={dimensions.width} height={dimensions.height} />
+    );
+  }
 
   return (
     <div style={{ width: dimensions.width, height: dimensions.height }}>
