@@ -81,4 +81,8 @@ export const useKeyboard = (onSaveCanvas: () => void) => {
     e.preventDefault();
     setElements([]);
   });
+  useHotkeys(["ctrl+a", "meta+a"], (e) => {
+    e.preventDefault();
+    setSelectedElements([...elements]);
+  });
 };
