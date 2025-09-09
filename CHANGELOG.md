@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## Changes
 
 - Added autosave feature to preserve drawings between sessions
+- Added multiple selection functionality
 
 ## [0.0.8]
 
