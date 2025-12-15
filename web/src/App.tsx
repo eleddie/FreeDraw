@@ -24,6 +24,7 @@ import {
 } from "./utils";
 import Toolbar from "./components/Toolbar";
 import LoadingScreen from "./components/LoadingScreen";
+import Minimap from "./components/Minimap";
 import useAppState from "./store/state";
 import { useHistory } from "./hooks/useHistory";
 import { Action, ElementPosition, Element, TypesTools } from "./types";
@@ -918,6 +919,13 @@ const App = () => {
         onContextMenu={(e) => e.preventDefault()}
       />
       <Toolbar onSaveCanvas={onSaveCanvas} />
+      <Minimap
+        elements={elements}
+        panOffset={panOffset}
+        viewportWidth={dimensions.width}
+        viewportHeight={dimensions.height}
+        onNavigate={(x, y) => setPanOffset({ x, y })}
+      />
     </div>
   );
 };
