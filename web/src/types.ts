@@ -10,6 +10,7 @@ export enum TypesTools {
   Text = "text",
   Image = "image",
   Arrow = "arrow",
+  Group = "group",
 }
 
 export type ElementType = TypesTools;
@@ -24,6 +25,10 @@ export type Element = {
   text?: string;
   src?: string;
   points?: { x: number; y: number }[];
+  // For merged elements: multiple separate strokes
+  strokes?: { x: number; y: number }[][];
+  // For grouped elements: store original elements for ungrouping
+  groupedElements?: Element[];
   roughElement?: Drawable | Drawable[];
   xOffsets?: number[];
   yOffsets?: number[];

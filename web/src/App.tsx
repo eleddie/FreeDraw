@@ -264,10 +264,98 @@ const App = () => {
     }
   }, [setSelectedElements, selectedElements, tool]);
 
+  // Helper function to move an element by delta
+  const moveElement = (
+    element: Element,
+    deltaX: number,
+    deltaY: number
+  ): Element => {
+    const result = { ...element };
+
+    // Update bounds
+    if (result.x1 !== undefined) result.x1 = result.x1 + deltaX;
+    if (result.y1 !== undefined) result.y1 = result.y1 + deltaY;
+    if (result.x2 !== undefined) result.x2 = result.x2 + deltaX;
+    if (result.y2 !== undefined) result.y2 = result.y2 + deltaY;
+
+    // Update points for pencil elements
+    if (result.points) {
+      result.points = result.points.map((p) => ({
+        x: p.x + deltaX,
+        y: p.y + deltaY,
+      }));
+    }
+
+    // Update strokes for merged pencil elements
+    if (result.strokes) {
+      result.strokes = result.strokes.map((stroke) =>
+        stroke.map((p) => ({
+          x: p.x + deltaX,
+          y: p.y + deltaY,
+        }))
+      );
+    }
+
+    // Recreate roughElement for shapes
+    if (
+      [
+        TypesTools.Line,
+        TypesTools.Rectangle,
+        TypesTools.Circle,
+        TypesTools.Arrow,
+      ].includes(result.type)
+    ) {
+      const recreated = createElement(
+        result.id,
+        result.x1!,
+        result.y1!,
+        result.x2!,
+        result.y2!,
+        result.type,
+        result.color,
+        result.src,
+        result.initialCoordinates
+      );
+      result.roughElement = recreated.roughElement;
+    }
+
+    // Handle Group elements - recursively move children
+    if (result.type === TypesTools.Group && result.groupedElements) {
+      result.groupedElements = result.groupedElements.map((child) =>
+        moveElement(child, deltaX, deltaY)
+      );
+    }
+
+    return result;
+  };
+
   const getElementBounds = (element: Element) => {
     if (element.type === TypesTools.Pencil) {
-      const { minX, minY, maxX, maxY } = getStrokeBounds(element.points!);
-      return { x1: minX, y1: minY, x2: maxX, y2: maxY };
+      // Handle merged elements with multiple strokes
+      if (element.strokes && element.strokes.length > 0) {
+        let minX = Infinity,
+          minY = Infinity,
+          maxX = -Infinity,
+          maxY = -Infinity;
+        element.strokes.forEach((stroke) => {
+          const bounds = getStrokeBounds(stroke);
+          minX = Math.min(minX, bounds.minX);
+          minY = Math.min(minY, bounds.minY);
+          maxX = Math.max(maxX, bounds.maxX);
+          maxY = Math.max(maxY, bounds.maxY);
+        });
+        return { x1: minX, y1: minY, x2: maxX, y2: maxY };
+      } else if (element.points && element.points.length > 0) {
+        const { minX, minY, maxX, maxY } = getStrokeBounds(element.points);
+        return { x1: minX, y1: minY, x2: maxX, y2: maxY };
+      }
+      // Fallback to element bounds for pencil
+      return {
+        x1: element.x1 ?? 0,
+        y1: element.y1 ?? 0,
+        x2: element.x2 ?? 0,
+        y2: element.y2 ?? 0,
+      };
     }
     return {
       x1: Math.min(element.x1!, element.x2!),
@@ -423,38 +511,59 @@ const App = () => {
 
     //*****/
 
-    const elementsNormalized = elements.map((element) => {
-      //  Make each element start at 0,0 using the minX and minY
-      if (
+    // Helper function to normalize an element's position for saving
+    const normalizeElement = (element: Element): Element => {
+      const deltaX = -minX + PADDING;
+      const deltaY = -minY + PADDING;
+
+      if (element.type === TypesTools.Group && element.groupedElements) {
+        // Recursively normalize grouped elements
+        return {
+          ...element,
+          x1: element.x1! + deltaX,
+          y1: element.y1! + deltaY,
+          x2: element.x2! + deltaX,
+          y2: element.y2! + deltaY,
+          groupedElements: element.groupedElements.map(normalizeElement),
+        };
+      } else if (
         [TypesTools.Pencil, TypesTools.Image, TypesTools.Text].includes(
           element.type
         )
       ) {
         return {
           ...element,
-          x1: element.x1! - minX + PADDING,
-          y1: element.y1! - minY + PADDING,
-          x2: element.x2! - minX + PADDING,
-          y2: element.y2! - minY + PADDING,
+          x1: element.x1! + deltaX,
+          y1: element.y1! + deltaY,
+          x2: element.x2! + deltaX,
+          y2: element.y2! + deltaY,
           points: element.points?.map((point) => ({
-            x: point.x - minX + PADDING,
-            y: point.y - minY + PADDING,
+            x: point.x + deltaX,
+            y: point.y + deltaY,
           })),
+          strokes: element.strokes?.map((stroke) =>
+            stroke.map((point) => ({
+              x: point.x + deltaX,
+              y: point.y + deltaY,
+            }))
+          ),
         };
       } else {
         return createElement(
           element.id,
-          element.x1! - minX + PADDING,
-          element.y1! - minY + PADDING,
-          element.x2! - minX + PADDING,
-          element.y2! - minY + PADDING,
+          element.x1! + deltaX,
+          element.y1! + deltaY,
+          element.x2! + deltaX,
+          element.y2! + deltaY,
           element.type,
           element.color,
           element.src,
           element.initialCoordinates
         );
       }
-    });
+    };
+
+    const elementsNormalized = elements.map(normalizeElement);
 
     const roughCanvas = rough.canvas(canvas);
 
@@ -464,7 +573,7 @@ const App = () => {
         context,
         element,
         pendingEraseIds,
-        selectedElements
+        [] // Pass empty array to avoid drawing selection boxes in saved image
       );
     });
 
@@ -541,12 +650,18 @@ const App = () => {
           setSelectedElements(newSelected);
         }
 
-        if (element.type === TypesTools.Pencil) {
+        if (element.type === TypesTools.Pencil && !element.strokes) {
+          // Single stroke pencil - use point offsets
           const xOffsets =
             element.points?.map((point) => clientX - point.x) || [];
           const yOffsets =
             element.points?.map((point) => clientY - point.y) || [];
           setActiveElement({ ...element, xOffsets, yOffsets });
+        } else if (element.type === TypesTools.Pencil && element.strokes) {
+          // Merged element with multiple strokes - use bounding box offset
+          const offsetX = clientX - element.x1!;
+          const offsetY = clientY - element.y1!;
+          setActiveElement({ ...element, offsetX, offsetY });
         } else {
           const offsetX = clientX - element.x1!;
           const offsetY = clientY - element.y1!;
@@ -682,9 +797,16 @@ const App = () => {
                 x: p.x + deltaX,
                 y: p.y + deltaY,
               }));
+              const newStrokes = el.strokes?.map((stroke) =>
+                stroke.map((p) => ({
+                  x: p.x + deltaX,
+                  y: p.y + deltaY,
+                }))
+              );
               return {
                 ...el,
                 points: newPoints,
+                strokes: newStrokes,
                 x1: el.x1! + deltaX,
                 y1: el.y1! + deltaY,
                 x2: el.x2! + deltaX,
@@ -711,6 +833,18 @@ const App = () => {
                 el.initialCoordinates
               );
             }
+            if (el.type === TypesTools.Group && el.groupedElements) {
+              return {
+                ...el,
+                groupedElements: el.groupedElements.map((child) =>
+                  moveElement(child, deltaX, deltaY)
+                ),
+                x1: el.x1! + deltaX,
+                y1: el.y1! + deltaY,
+                x2: el.x2! + deltaX,
+                y2: el.y2! + deltaY,
+              };
+            }
             return {
               ...el,
               x1: el.x1! + deltaX,
@@ -725,7 +859,11 @@ const App = () => {
           );
           setSelectedElements(nextSelectedElements);
         }
-      } else if (activeElement?.type === TypesTools.Pencil) {
+      } else if (
+        activeElement?.type === TypesTools.Pencil &&
+        !activeElement.strokes
+      ) {
+        // Single stroke pencil - use point offsets
         const newPoints = activeElement.points?.map((_, index) => ({
           x: clientX - (activeElement.xOffsets?.[index] || 0),
           y: clientY - (activeElement.yOffsets?.[index] || 0),
@@ -741,6 +879,89 @@ const App = () => {
         setElements(elementsCopy, true);
         const nextSelectedElements = selectedElements.map((sel) =>
           sel.id === activeElement.id ? elementsCopy[elementId] : sel
+        );
+        setSelectedElements(nextSelectedElements);
+      } else if (
+        activeElement?.type === TypesTools.Pencil &&
+        activeElement.strokes
+      ) {
+        // Merged element with multiple strokes - move by delta
+        const { id, x1, y1, x2, y2, offsetX, offsetY, strokes } = activeElement;
+        const newX1 = clientX - (offsetX || 0);
+        const newY1 = clientY - (offsetY || 0);
+        const deltaX = newX1 - x1!;
+        const deltaY = newY1 - y1!;
+
+        const newStrokes = strokes?.map((stroke) =>
+          stroke.map((p) => ({
+            x: p.x + deltaX,
+            y: p.y + deltaY,
+          }))
+        );
+
+        const elementsCopy = [...elements];
+        const elementIndex = elementsCopy.findIndex((e) => e.id === id);
+        elementsCopy[elementIndex] = {
+          ...elementsCopy[elementIndex],
+          strokes: newStrokes,
+          x1: newX1,
+          y1: newY1,
+          x2: x2! + deltaX,
+          y2: y2! + deltaY,
+        };
+
+        // Update activeElement for next move
+        setActiveElement({
+          ...activeElement,
+          strokes: newStrokes,
+          x1: newX1,
+          y1: newY1,
+          x2: x2! + deltaX,
+          y2: y2! + deltaY,
+        });
+
+        setElements(elementsCopy, true);
+        const nextSelectedElements = selectedElements.map((sel) =>
+          sel.id === id ? elementsCopy[elementIndex] : sel
+        );
+        setSelectedElements(nextSelectedElements);
+      } else if (activeElement?.type === TypesTools.Group) {
+        // Group element - move all children
+        const { id, x1, y1, x2, y2, offsetX, offsetY, groupedElements } =
+          activeElement;
+        const newX1 = clientX - (offsetX || 0);
+        const newY1 = clientY - (offsetY || 0);
+        const deltaX = newX1 - x1!;
+        const deltaY = newY1 - y1!;
+
+        const newGroupedElements = groupedElements?.map((child) =>
+          moveElement(child, deltaX, deltaY)
+        );
+
+        const elementsCopy = [...elements];
+        const elementIndex = elementsCopy.findIndex((e) => e.id === id);
+        elementsCopy[elementIndex] = {
+          ...elementsCopy[elementIndex],
+          groupedElements: newGroupedElements,
+          x1: newX1,
+          y1: newY1,
+          x2: x2! + deltaX,
+          y2: y2! + deltaY,
+        };
+
+        // Update activeElement for next move
+        setActiveElement({
+          ...activeElement,
+          groupedElements: newGroupedElements,
+          x1: newX1,
+          y1: newY1,
+          x2: x2! + deltaX,
+          y2: y2! + deltaY,
+        });
+
+        setElements(elementsCopy, true);
+        const nextSelectedElements = selectedElements.map((sel) =>
+          sel.id === id ? elementsCopy[elementIndex] : sel
         );
         setSelectedElements(nextSelectedElements);
       } else {

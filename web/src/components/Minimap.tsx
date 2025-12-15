@@ -35,20 +35,37 @@ const Minimap: React.FC<MinimapProps> = ({
     let maxX = -Infinity;
     let maxY = -Infinity;
 
-    elements.forEach((element) => {
-      if (element.type === TypesTools.Pencil && element.points) {
-        const bounds = getStrokeBounds(element.points);
-        minX = Math.min(minX, bounds.minX);
-        minY = Math.min(minY, bounds.minY);
-        maxX = Math.max(maxX, bounds.maxX);
-        maxY = Math.max(maxY, bounds.maxY);
+    // Recursive function to get bounds of an element (handles groups)
+    const getElementBounds = (element: Element) => {
+      if (element.type === TypesTools.Group && element.groupedElements) {
+        // Recursively get bounds of all children
+        element.groupedElements.forEach(getElementBounds);
+      } else if (element.type === TypesTools.Pencil) {
+        // Handle merged elements with multiple strokes
+        if (element.strokes && element.strokes.length > 0) {
+          element.strokes.forEach((strokePoints) => {
+            const bounds = getStrokeBounds(strokePoints);
+            minX = Math.min(minX, bounds.minX);
+            minY = Math.min(minY, bounds.minY);
+            maxX = Math.max(maxX, bounds.maxX);
+            maxY = Math.max(maxY, bounds.maxY);
+          });
+        } else if (element.points) {
+          const bounds = getStrokeBounds(element.points);
+          minX = Math.min(minX, bounds.minX);
+          minY = Math.min(minY, bounds.minY);
+          maxX = Math.max(maxX, bounds.maxX);
+          maxY = Math.max(maxY, bounds.maxY);
+        }
       } else {
         minX = Math.min(minX, element.x1!, element.x2!);
         minY = Math.min(minY, element.y1!, element.y2!);
         maxX = Math.max(maxX, element.x1!, element.x2!);
         maxY = Math.max(maxY, element.y1!, element.y2!);
       }
-    });
+    };
+
+    elements.forEach(getElementBounds);
 
     // Include the current viewport in the bounds
     const viewMinX = -panOffset.x;
@@ -114,27 +131,48 @@ const Minimap: React.FC<MinimapProps> = ({
     // Draw elements
     const defaultColor = isDark ? "#ffffff" : "#000000";
 
-    elements.forEach((element) => {
+    // Recursive function to draw an element (handles groups)
+    const drawElement = (element: Element) => {
       const color = element.color || defaultColor;
       context.fillStyle = color;
       context.strokeStyle = color;
 
       switch (element.type) {
         case TypesTools.Pencil: {
-          if (!element.points || element.points.length < 2) break;
-          const scaledPoints = element.points.map((p) => ({
-            x: transformX(p.x),
-            y: transformY(p.y),
-          }));
-          const stroke = getSvgPathFromStroke(
-            getStroke(scaledPoints, {
-              size: Math.max(1, 4 * scale),
-              thinning: 0.5,
-              smoothing: 0.5,
-              streamline: 0.5,
-            })
-          );
-          context.fill(new Path2D(stroke));
+          // Handle merged elements with multiple strokes
+          if (element.strokes && element.strokes.length > 0) {
+            element.strokes.forEach((strokePoints) => {
+              if (strokePoints.length < 2) return;
+              const scaledPoints = strokePoints.map((p) => ({
+                x: transformX(p.x),
+                y: transformY(p.y),
+              }));
+              const stroke = getSvgPathFromStroke(
+                getStroke(scaledPoints, {
+                  size: Math.max(1, 4 * scale),
+                  thinning: 0.5,
+                  smoothing: 0.5,
+                  streamline: 0.5,
+                })
+              );
+              context.fill(new Path2D(stroke));
+            });
+          } else if (element.points && element.points.length >= 2) {
+            // Single stroke (normal pencil element)
+            const scaledPoints = element.points.map((p) => ({
+              x: transformX(p.x),
+              y: transformY(p.y),
+            }));
+            const stroke = getSvgPathFromStroke(
+              getStroke(scaledPoints, {
+                size: Math.max(1, 4 * scale),
+                thinning: 0.5,
+                smoothing: 0.5,
+                streamline: 0.5,
+              })
+            );
+            context.fill(new Path2D(stroke));
+          }
           break;
         }
         case TypesTools.Line:
@@ -195,8 +233,19 @@ const Minimap: React.FC<MinimapProps> = ({
           context.strokeRect(x, y, w, h);
           break;
         }
+        case TypesTools.Group: {
+          // Draw all child elements within the group
+          if (element.groupedElements && element.groupedElements.length > 0) {
+            element.groupedElements.forEach((child) => {
+              drawElement(child);
+            });
+          }
+          break;
+        }
       }
-    });
+    };
+
+    elements.forEach(drawElement);
 
     // Draw viewport indicator
     const viewX = transformX(-panOffset.x);

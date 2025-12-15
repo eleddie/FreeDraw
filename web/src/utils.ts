@@ -170,7 +170,23 @@ export const positionWithinElement = (
       return start || end || on;
     }
     case TypesTools.Pencil: {
-      const betweenAnyPoint = element.points!.some((point, index) => {
+      // Handle merged elements with multiple strokes
+      if (element.strokes && element.strokes.length > 0) {
+        const betweenAnyPoint = element.strokes.some((stroke) =>
+          stroke.some((point, index) => {
+            const nextPoint = stroke[index + 1];
+            if (!nextPoint) return false;
+            return (
+              onLine(point.x, point.y, nextPoint.x, nextPoint.y, x, y, 5) !=
+              null
+            );
+          })
+        );
+        return betweenAnyPoint ? "inside" : null;
+      }
+      // Single stroke pencil
+      if (!element.points) return null;
+      const betweenAnyPoint = element.points.some((point, index) => {
         const nextPoint = element.points![index + 1];
         if (!nextPoint) return false;
         return (
@@ -181,6 +197,17 @@ export const positionWithinElement = (
     }
     case TypesTools.Text:
       return x >= x1! && x <= x2! && y >= y1! && y <= y2! ? "inside" : null;
+    case TypesTools.Group: {
+      // Check if click is on any child element
+      if (element.groupedElements) {
+        const isInsideAnyChild = element.groupedElements.some(
+          (child) => positionWithinElement(x, y, child) !== null
+        );
+        return isInsideAnyChild ? "inside" : null;
+      }
+      // Fallback to bounding box
+      return x >= x1! && x <= x2! && y >= y1! && y <= y2! ? "inside" : null;
+    }
     default:
       throw new Error(`Type not recognized: ${type}`);
   }
@@ -490,11 +517,30 @@ export const drawElement = (
     let y2 = element.y2! + padding;
 
     if (element.type === TypesTools.Pencil) {
-      const { minX, minY, maxX, maxY } = getStrokeBounds(element.points!);
-      x1 = minX - padding;
-      y1 = minY - padding;
-      x2 = maxX + padding;
-      y2 = maxY + padding;
+      // Handle merged elements with multiple strokes
+      if (element.strokes && element.strokes.length > 0) {
+        let minX = Infinity,
+          minY = Infinity,
+          maxX = -Infinity,
+          maxY = -Infinity;
+        element.strokes.forEach((stroke) => {
+          const bounds = getStrokeBounds(stroke);
+          minX = Math.min(minX, bounds.minX);
+          minY = Math.min(minY, bounds.minY);
+          maxX = Math.max(maxX, bounds.maxX);
+          maxY = Math.max(maxY, bounds.maxY);
+        });
+        x1 = minX - padding;
+        y1 = minY - padding;
+        x2 = maxX + padding;
+        y2 = maxY + padding;
+      } else if (element.points) {
+        const { minX, minY, maxX, maxY } = getStrokeBounds(element.points);
+        x1 = minX - padding;
+        y1 = minY - padding;
+        x2 = maxX + padding;
+        y2 = maxY + padding;
+      }
     }
 
     context.strokeRect(x1, y1, x2 - x1, y2 - y1);
@@ -521,15 +567,32 @@ export const drawElement = (
       break;
     }
     case TypesTools.Pencil: {
-      const stroke = getSvgPathFromStroke(
-        getStroke(element.points || [], {
-          size: 4,
-          thinning: 0.5,
-          smoothing: 0.5,
-          streamline: 0.5,
-        })
-      );
-      context.fill(new Path2D(stroke));
+      // Handle merged elements with multiple strokes
+      if (element.strokes && element.strokes.length > 0) {
+        element.strokes.forEach((strokePoints) => {
+          if (strokePoints.length < 2) return;
+          const stroke = getSvgPathFromStroke(
+            getStroke(strokePoints, {
+              size: 4,
+              thinning: 0.5,
+              smoothing: 0.5,
+              streamline: 0.5,
+            })
+          );
+          context.fill(new Path2D(stroke));
+        });
+      } else {
+        // Single stroke (normal pencil element)
+        const stroke = getSvgPathFromStroke(
+          getStroke(element.points || [], {
+            size: 4,
+            thinning: 0.5,
+            smoothing: 0.5,
+            streamline: 0.5,
+          })
+        );
+        context.fill(new Path2D(stroke));
+      }
       break;
     }
     case TypesTools.Arrow: {
@@ -569,6 +632,20 @@ export const drawElement = (
         }
         context.drawImage(image, element.x1!, element.y1!, width, height);
         context.restore();
+      }
+      break;
+    case TypesTools.Group:
+      // Draw all child elements in the group
+      if (element.groupedElements) {
+        element.groupedElements.forEach((child) => {
+          drawElement(
+            roughCanvas,
+            context,
+            child,
+            pendingEraseIds,
+            selectedElements
+          );
+        });
       }
       break;
     default:
