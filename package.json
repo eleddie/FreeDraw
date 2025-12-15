@@ -30,6 +30,7 @@
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
     "package": "cd web && yarn build && cd .. && node esbuild.js --production",
+    "publish:openvsx": "sh -c \"npx ovsx publish -p \\\"${ACCESS_TOKEN_OPEN_VSX:-$OVSX_PAT}\\\"\"",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",

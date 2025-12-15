@@ -65,3 +65,9 @@ To release a new version of the extension run the following command:
 vsce package
 vsce publish
 ```
+
+To release the extension to the Open VSX Registry, run the following command:
+
+```bash
+yarn publish:openvsx
+```
