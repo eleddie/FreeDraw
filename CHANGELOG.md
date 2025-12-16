@@ -4,23 +4,42 @@ All notable changes to the "freedraw" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.11]
+
+### Changes
+
+- Added minimap for easier navigation on large canvases
+- Added grouping and ungrouping of elements (keyboard shortcuts)
+- Updated extension icon
+
+### Fixes
+
+- Fixed favicon path for correct asset loading
+
+## [0.0.10]
+
+### Changes
+
+- Added keyboard shortcut for selecting all elements
+- Added loading screen with font loading for better app initialization
+
 ## [0.0.9]
 
-## Changes
+### Changes
 
 - Added autosave feature to preserve drawings between sessions
 - Added multiple selection functionality
 
 ## [0.0.8]
 
-## Changes
+### Changes
 
 - Fixed a bug where the canvas was not being exported correctly
   - Shapes using Rough.js were not translated correctly to the exported canvas
 
 ## [0.0.7]
 
-## Changes
+### Changes
 
 - Infinite canvas: Users can now pan the canvas to have the "infinite canvas" feeling
 - Hand drawing now uses [perfect-freehand](https://github.com/steveruizok/perfect-freehand) for a better look and feel
