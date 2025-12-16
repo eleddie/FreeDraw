@@ -59,15 +59,39 @@ yarn dev
 
 ## Release
 
-To release a new version of the extension run the following command:
+To release a new version of the extension to both the VS Code Marketplace and Open VSX Registry, run:
 
 ```bash
-vsce package
-vsce publish
+yarn publish:all
 ```
 
-To release the extension to the Open VSX Registry, run the following command:
+This command requires a `.env` file in the root directory with the following token:
 
 ```bash
-yarn publish:openvsx
+ACCESS_TOKEN_OPEN_VSX=<your-openvsx-token>
 ```
+
+For VS Code Marketplace, the publish script uses credentials stored via `vsce login`.
+
+### Troubleshooting Publishing
+
+#### TF400813: User not authorized error
+
+If you see an error like:
+
+```
+TF400813: The user 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' is not authorized to access this resource.
+```
+
+This means your VS Code Marketplace Personal Access Token (PAT) is invalid or expired. To fix it:
+
+1. Generate a new PAT at https://dev.azure.com/:
+
+   - Click your profile icon → **Personal access tokens** → **+ New Token**
+   - Set **Organization** to "All accessible organizations"
+   - Under **Scopes**, select **Custom defined** and check **Marketplace → Manage**
+   - Click **Create** and copy the token
+
+2. Run `vsce login ProjectSyntax` and paste your new token when prompted
+
+3. Run `yarn publish:all` again
